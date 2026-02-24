@@ -5,10 +5,11 @@ Piattaforma di gioco web full-stack incentrata sulla sicurezza, con autenticazio
 Sviluppata per dimostrare un'integrazione sicura tra backend e frontend, scelte di progettazione dell'autenticazione e una struttura di progetto orientata alla produzione.
 
 ## Perché questo progetto?
-Questo progetto è stato creato per esercitarmi ed arricchire la mia conoscenza in materia, inoltre mi sono focalizzato sui seguenti campi per poter migliorare nel backend e frontend:
-- autenticazioni reali con cookie
-- sicurezza lato server e design lato web
-- comunicazione full-stack (API, DB, frontend)
+Questo progetto è stato creato per andare oltre gli esercizi scolastici ed
+approfondire le mie competenze. Mi sono focalizzato in particolare su:
+- autenticazioni reali basate su cookie
+- sicurezza lato server e progettazione web
+- comunicazione full-stack (API, database, frontend)
 
 ## Cosa ho imparato
 - come funzionano i flussi di autenticazione (sessioni vs JWT)
@@ -17,14 +18,14 @@ Questo progetto è stato creato per esercitarmi ed arricchire la mia conoscenza 
 - debugging e miglioramento del codice
 
 ## Stato del progetto
-Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze ed è in continua evoluzione, visto che non è ancora finito.
+Progetto nato a scopo di studio e sperimentazione, attualmente in continua evoluzione.
 
 ## Avvio rapido
 1. Clona il repository
 2. Configura le variabili d’ambiente
 3. Avvia backend e frontend.
 
-## Come avviare la parte beckend e frontend
+## Come avviare la parte backend e frontend
 
 1. Copia `.env.example` in `.env`.
 2. Configura variabili DB e segreti in `.env`.
@@ -36,11 +37,11 @@ Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze
    `http://localhost:4000/login/login.html`
    (o la porta mostrata in console).
 
-## Per aziende/reviewer
+## Per aziende / reviewer
 
-- Il repository e pensato per essere clonato e provato rapidamente.
-- Il file `.env` non va versionato (gia ignorato da `.gitignore`).
-- Se vuoi una demo pubblica, pubblica anche un ambiente online con credenziali demo a privilegi ridotti.
+- Il repository è pensato per essere clonato e provato rapidamente.
+- Il file `.env` non va versionato (già ignorato da `.gitignore`).
+- Per una demo pubblica, è consigliato usare credenziali demo con privilegi ridotti.
 
 ## Configurazione login/2FA
 
@@ -58,7 +59,7 @@ Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze
 2. Verifica che non ci siano URL hardcoded `localhost` nei flussi critici.
 3. Usa account demo separati da account reali.
 
-## annotazione personale
+## Nota personale
 Non è un progetto perfetto, ma mi è servito per capire come funziona davvero un’applicazione full-stack.
 
 ## License
