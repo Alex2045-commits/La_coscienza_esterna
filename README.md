@@ -4,6 +4,12 @@ Piattaforma di gioco web full-stack incentrata sulla sicurezza, con autenticazio
 
 Sviluppata per dimostrare un'integrazione sicura tra backend e frontend, scelte di progettazione dell'autenticazione e una struttura di progetto orientata alla produzione.
 
+## Perché questo progetto?
+Questo progetto è stato creato per esercitarmi ed arricchire la mia conoscenza in materia, inoltre mi sono focalizzato sui seguenti campi per poter migliorare nel backend e frontend:
+- autenticazioni reali con cookie
+- sicurezza lato server e design lato web
+- comunicazione full-stack (API, DB, frontend)
+
 ## Quick Start (Local)
 
 1. Copia `.env.example` in `.env`.
