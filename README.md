@@ -22,9 +22,9 @@ Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze
 ## Avvio rapido
 1. Clona il repository
 2. Configura le variabili d’ambiente
-3. Avvia backend e frontend
+3. Avvia backend e frontend.
 
-##Come avviare la parte beckend e frontend
+## Come avviare la parte beckend e frontend
 
 1. Copia `.env.example` in `.env`.
 2. Configura variabili DB e segreti in `.env`.
