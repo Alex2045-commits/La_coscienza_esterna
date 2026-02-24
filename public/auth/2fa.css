@@ -1,0 +1,296 @@
+/* ===============================
+   2FA PAGE — La Coscienza Esterna
+=============================== */
+:root {
+   --panel: rgba(10, 14, 23, 0.85); /* Background scuro per il pannello */
+   --card: rgba(15, 20, 30, 0.85);  /* Background scuro per la card */
+   --accent: #4f46e5;               /* Colore primario per accent */
+   --accent2: #3b82f6;              /* Colore secondario per accent */
+   --muted: #a1a1aa;                /* Colore per testi meno importanti */
+   --error: #f87171;                /* Colore per gli errori */
+   --success: #34d399;              /* Colore per successi */
+   --highlight: #e6eef5;            /* Colore per il testo principale */
+   --text-light: rgba(255, 255, 255, 0.8); /* Colore del testo chiaro */
+   --input-background: rgba(255, 255, 255, 0.2); /* Colore di sfondo degli input */
+}
+
+/* Gif del caricamento */
+.loading-gif {
+  max-width: 200px;
+}
+
+/* Contenitore del pre-loader */
+.pre-loader {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  background: #191f26;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Aggiunge la classe 'hidden' quando il caricamento è terminato */
+.pre-loader.hidden {
+  animation: fadeOut 1s ease-in-out forwards;
+}
+
+/* Animazione per far sparire il pre-loader */
+@keyframes fadeOut {
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Font personalizzato */
+@font-face {
+  font-family: 'PixelFont';
+  src: url('font/pixelfont.eot') format('embedded-opentype'),
+       url('font/pixelfont.woff') format('woff'),
+       url('font/pixelfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.custom-cursor {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    pointer-events: none; /* Assicurati che il cursore non interferisca con gli altri eventi del mouse */
+}
+
+/* ===============================
+   BODY AND BACKGROUND
+=============================== */
+body {
+   background-image: url('../sfondi/login-background.jpg');
+   height: 100vh;
+   margin: 0;
+   image-rendering: smooth;
+   position: relative;
+}
+
+/* ===============================
+   2FA WRAPPER (contiene la card)
+=============================== */
+.twofa-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Centra verticalmente */
+  background-image: url('../sfondi/login-background.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100vh; /* Occupa l'intera altezza della finestra */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: absolute; /* Si posiziona sopra lo sfondo senza creare problemi di dimensioni */
+  z-index: 10; /* Assicurati che sia sopra il background */
+  overflow: hidden; /* Rimuovi lo scroll se c'è */
+}
+
+.twofa-wrapper button.a {
+  position: absolute;
+  align-items: right;
+  top: 20px;
+  left: 20px;
+  padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+}
+
+/* ===============================
+   2FA CARD STYLES (card con form)
+=============================== */
+.twofa-card {
+  width: 100%;
+  max-width: 420px;  /* Limita la larghezza massima della card */
+  min-height: 350px;  /* Imposta una dimensione minima per la card */
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, .05);
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .7);
+  animation: fadeUp .4s ease;
+  position: relative;
+  z-index: 20; /* Assicurati che la card sia visibile sopra gli altri elementi */
+  display: flex; /* Usato per allineare il contenuto verticale */
+  flex-direction: column;
+  justify-content: space-between; /* Assicura che ci sia abbastanza spazio tra gli elementi */
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===============================
+   HEADER STYLES (testo del titolo)
+=============================== */
+.twofa-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.twofa-header .logo {
+  font-weight: 800;
+  font-size: 56px;
+  margin-bottom: 6px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  background-clip: text;
+  color: transparent;
+  animation: logoAnimation 1s ease-out;
+}
+
+@keyframes logoAnimation {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.twofa-header h2 {
+  margin: 6px 0;
+  font-size: 25px;
+  color: var(--highlight);
+}
+
+.twofa-header p {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+/* ===============================
+   BODY INPUT STYLES (form input)
+=============================== */
+.twofa-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.twofa-body input {
+  font-size: 22px;
+  letter-spacing: 6px;
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--input-background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--highlight);
+  transition: all 0.3s ease;
+}
+
+.twofa-body input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px 2px var(--accent2);
+}
+
+.twofa-body input::placeholder {
+  letter-spacing: 2px;
+  opacity: .5;
+  color: var(--muted);
+}
+
+.twofa-body button {
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.twofa-body button:hover {
+  opacity: .9;
+  transform: translateY(-3px); /* Leggero effetto di sollevamento */
+}
+
+.twofa-body button:active {
+  transform: translateY(1px); /* Effetto click */
+}
+
+.twofa-body button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* ===============================
+   ERROR AND SUCCESS MESSAGES
+=============================== */
+.error {
+  min-height: 18px;
+  font-size: 13px;
+  color: var(--error);
+  text-align: center;
+}
+
+.success {
+  min-height: 18px;
+  font-size: 13px;
+  color: var(--success);
+  text-align: center;
+}
+
+/* ===============================
+   ACCESSIBILITY STYLES
+=============================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.info {
+   color: #2563eb;
+}
+
+/* ===============================
+   MEDIA QUERIES
+=============================== */
+@media (max-width: 480px) {
+  .twofa-card {
+    padding: 20px;
+  }
+  .twofa-body input {
+    font-size: 18px;
+    letter-spacing: 4px;
+  }
+  .twofa-header .logo {
+    font-size: 22px;
+  }
+}

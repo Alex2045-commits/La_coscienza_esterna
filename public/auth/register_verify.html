@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifica Email - La Coscienza Esterna</title>
+  <link rel="stylesheet" href="register_verify.css">
+</head>
+<body>
+  <div class="scene-bg"></div>
+  <main class="box">
+    <div class="verify-badge">Sicurezza Account</div>
+    <h1>Verifica Email</h1>
+    <p class="subtitle">Inserisci il codice a 6 cifre ricevuto via email per completare la registrazione.</p>
+
+    <form id="verifyForm" novalidate>
+      <label for="code">Codice</label>
+      <div class="input-group">
+        <input id="code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" required>
+      </div>
+      <p class="hint">Il codice scade dopo 10 minuti.</p>
+      <button id="verifyBtn" type="submit">Conferma</button>
+    </form>
+
+    <div class="actions">
+      <button id="resendBtn" type="button">Reinvia codice</button>
+      <a href="/login/login.html">Torna al login</a>
+    </div>
+
+    <div id="error" class="error" aria-live="polite"></div>
+    <div id="ok" class="ok" aria-live="polite"></div>
+  </main>
+
+  <script src="register_verify.js" defer></script>
+</body>
+</html>

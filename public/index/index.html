@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>LA COSCIENZA ESTERNA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="index.css">
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="../manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" href="../icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div class="pre-loader" id="preLoader">
+        <img src="../sfondi/icona_gioco.jpg" class="loading-gif" alt="loading"/>
+    </div>
+
+    <!-- Restante contenuto della pagina -->
+    <div class="a">
+        <a id="authPrimaryLink" href="../login/login.html"><button id="btnAuthPrimary" class="a">Accedi</button></a>
+        <a id="authSecondaryLink" href="../register/register.html"><button id="btnAuthSecondary" class="a">Registrati</button></a>
+    </div>
+
+
+    <!-- Area cliccabile per avviare la storia -->
+    <div class="start-area" onclick="startGame()">
+        <span>Inizia la Storia</span>
+    </div>
+
+    <section id="levelHub" class="level-hub" aria-live="polite">
+        <h2>Selezione Livelli</h2>
+        <p id="hubStatus">Accedi per sbloccare i livelli.</p>
+        <div class="level-grid">
+            <button class="level-btn" data-level="1" type="button">Livello 1</button>
+            <button class="level-btn" data-level="2" type="button">Livello 2</button>
+            <button class="level-btn" data-level="3" type="button">Livello 3</button>
+            <button class="level-btn" data-level="4" type="button">Hub Finale</button>
+        </div>
+    </section>
+
+    <!-- JS -->
+    <script src="index.js" defer></script>
+</body>
+
+</html>

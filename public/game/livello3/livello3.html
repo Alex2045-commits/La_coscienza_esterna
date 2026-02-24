@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LA COSCIENZA ESTERNA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="livello3.css">
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="../../manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" href="../../icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+
+  </head>
+  <body>
+    <!-- Pre-loader che viene mostrato mentre carichiamo le risorse -->
+    <div class="pre-loader" id="preLoader">
+      <img class="loading-gif" alt="loading" src="https://media0.giphy.com/media/11FuEnXyGsXFba/source.gif"/>
+    </div>
+      <!-- Collega gli script -->
+      <script src="../../index/index.js"></script>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <div class="container" align="center">
+            <!-- Menu a tendina per la selezione del livello -->
+            <select id="levelSelect">
+                <option value="../../index/index.html">home page</option>
+                <option value="../livello0/livello_0.html">Livello 1</option>
+                <option value="../livello1/livello1.html">Livello 2</option>
+                <option value="../livello2/livello2.html">Livello 3</option>
+                <!-- Aggiungi altri livelli se necessario -->
+            </select><br><br><br>
+
+            <!-- Pulsante per navigare al livello selezionato -->
+            <button onclick="navigateToLevel()">Vai al livello selezionato</button>
+        </div>
+
+        <!-- Script per il menu a tendina e il pulsante -->
+        <script src="js/livello3.js"></script>
+
+  </body>
+</html>

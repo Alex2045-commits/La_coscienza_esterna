@@ -1,0 +1,218 @@
+:root {
+  --bg0: #081427;
+  --bg1: #122742;
+  --panel: rgba(8, 20, 36, 0.9);
+  --border: rgba(141, 193, 249, 0.28);
+  --text: #e7f4ff;
+  --muted: #9cb7d1;
+  --accent: #4ed0ff;
+  --accent-2: #69f7b6;
+  --danger: #ff7c7c;
+  --ok: #7dffbc;
+}
+
+.top-home-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: auto;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  color: var(--accent);
+  background: rgba(9, 20, 35, 0.65);
+
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+
+  cursor: pointer;
+  z-index: 9999;
+
+  backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+}
+
+.top-home-btn:hover {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #04131f;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(50, 210, 255, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+html, body {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(1200px 700px at 12% 20%, #21466f 0%, transparent 62%),
+              radial-gradient(1000px 600px at 80% 85%, #185442 0%, transparent 60%),
+              linear-gradient(130deg, var(--bg0), var(--bg1));
+  color: var(--text);
+  min-height: 100vh;
+  padding: 22px;
+}
+
+.scene-bg {
+  position: fixed;
+  inset: 0;
+  background: url("../sfondi/login-background.jpg") center/cover no-repeat;
+  opacity: 0.16;
+  z-index: -1;
+}
+
+.box {
+  width: 100%;
+  max-width: 470px;
+  padding: 30px 26px;
+  background: linear-gradient(160deg, var(--panel), rgba(10, 21, 39, 0.95));
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.44);
+}
+
+h1 {
+  font-size: 1.95rem;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--muted);
+  line-height: 1.35;
+  margin-bottom: 18px;
+}
+
+#registerForm {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  font-size: 0.9rem;
+  color: #c2ddf6;
+}
+
+.input-group input {
+  width: 100%;
+  border-radius: 11px;
+  border: 1px solid rgba(154, 203, 247, 0.32);
+  background: rgba(13, 28, 46, 0.85);
+  color: var(--text);
+  padding: 12px 13px;
+  font-size: 0.98rem;
+}
+
+.input-group input::placeholder {
+  color: #8faac4;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(78, 208, 255, 0.2);
+}
+
+.password-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.toggle-password {
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid rgba(154, 203, 247, 0.32);
+  background: rgba(74, 118, 169, 0.26);
+  color: #d7ebff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle-password:hover {
+  background: rgba(74, 118, 169, 0.38);
+}
+
+#registerBtn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #041521;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.97rem;
+}
+
+#registerBtn:hover {
+  filter: brightness(1.05);
+}
+
+.spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-top: 3px solid #0a2031;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+#registerBtn.loading .btn-text {
+  display: none;
+}
+
+#registerBtn.loading .spinner {
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#error {
+  color: var(--danger);
+  margin-top: 10px;
+  min-height: 18px;
+}
+
+#ok {
+  color: var(--ok);
+  margin-top: 8px;
+  min-height: 18px;
+}
+
+.login-link {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.login-link a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .box {
+    padding: 24px 18px;
+  }
+}

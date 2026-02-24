@@ -1,0 +1,571 @@
+:root {
+    --button-bg: #3a4967;
+    --button-hover-bg: #45679e;
+    --select-bg: #2f4164;
+    --select-hover-bg: #8e2222;
+    --header-color: rgb(49, 70, 106);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background-color: #07090d;
+  cursor: default;
+}
+
+/* Gif del caricamento */
+.loading-gif {
+  max-width: 200px;
+}
+
+#narrativeBox {
+  white-space: pre-line;
+}
+
+.narrativeBox {
+  white-space: pre-line;
+}
+
+/* Contenitore del pre-loader */
+.pre-loader {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  background: #191f26;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Aggiunge la classe 'hidden' quando il caricamento è terminato */
+.pre-loader.hidden {
+  animation: fadeOut 1s ease-in-out forwards;
+}
+
+/* Animazione per scomparire il pre-loader */
+@keyframes fadeOut {
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Font personalizzato */
+@font-face {
+  font-family: 'PixelFont';
+  src: url('font/pixelfont.eot') format('embedded-opentype'),
+       url('font/pixelfont.woff') format('woff'),
+       url('font/pixelfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.custom-cursor {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    pointer-events: none; /* Assicurati che il cursore non interferisca con gli altri eventi del mouse */
+}
+/* HUD GAME */
+#gameHud {
+    position: fixed;
+    top: 12px;
+    left: 14px;
+    z-index: 99999;
+    color: white;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(6, 13, 24, 0.86), rgba(18, 33, 54, 0.78));
+    border: 1px solid rgba(130, 185, 255, 0.3);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42);
+}
+
+#xpContainer {
+    order: 4;
+    margin-top: 8px;
+    width: 340px;
+    height: 24px;
+    background: rgba(10, 16, 26, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#xpBar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #1293ff, #00d4ff, #00e0a5);
+    transition: width 0.35s;
+}
+
+#levelDisplay {
+    position: static;
+    order: 1;
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: left;
+    letter-spacing: 0.4px;
+    color: #eef6ff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+}
+
+#coinsDisplay {
+    order: 2;
+    margin-top: 0;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffe089;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+}
+
+#heartsDisplay {
+    order: 3;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+}
+
+#heartsHudImage {
+    width: 236px;
+    max-width: 55vw;
+    height: auto;
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.75));
+}
+
+#coinAmount {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+#coinIcon {
+    width: 32px;
+    height: 32px;
+    margin-right: 6px;
+}
+
+#storyHint {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 99998;
+    max-width: min(92vw, 980px);
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(10, 16, 26, 0.8), rgba(25, 46, 76, 0.72));
+    border: 1px solid rgba(147, 197, 253, 0.35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    color: #e5f0ff;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#storyHint p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.35;
+    letter-spacing: 0.2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+.chart-container {
+    margin-top: 40px;
+}
+
+#gamePauseMenu {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100000;
+}
+
+#gamePauseMenu.show {
+  display: flex;
+}
+
+#gamePauseMenu .pause-card {
+  min-width: 280px;
+  max-width: 90vw;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(18, 26, 42, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+#gamePauseMenu .pause-title {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+#gamePauseMenu .pause-subtitle {
+  margin: 0 0 16px;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+#gamePauseMenu .pause-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#gamePauseMenu button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+#resumeGameBtn {
+  background: #16a34a;
+  color: #fff;
+}
+
+#leaveGameBtn {
+  background: #dc2626;
+  color: #fff;
+}
+
+#firstActOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100005;
+  pointer-events: auto;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+#firstActOverlay.hide-cursor,
+#firstActOverlay.hide-cursor * {
+  cursor: none !important;
+}
+
+#firstActScene {
+  --lookShift: 0px;
+  --shrink: 0px;
+  --first-act-room-bg: linear-gradient(180deg, rgba(20, 24, 30, 0.96), rgba(10, 12, 16, 0.97));
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #020305;
+  color: #fff;
+}
+
+#firstActRoom {
+  position: absolute;
+  left: calc(10% + var(--shrink));
+  right: calc(10% + var(--shrink));
+  top: calc(16% + var(--shrink));
+  bottom: calc(16% + var(--shrink));
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: var(--first-act-room-bg);
+  transform: translateX(var(--lookShift));
+  transition: left 0.5s linear, right 0.5s linear, top 0.5s linear, bottom 0.5s linear;
+}
+
+#firstActHero {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: 106px;
+  height: 106px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: auto 100%;
+  border-radius: 0;
+  transform: translateX(0);
+  box-shadow: none;
+  z-index: 6;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#firstActHero.hero.seated {
+  height: 86px;
+  bottom: 16%;
+}
+
+#firstActHero.hero.marco {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+#firstActMirror,
+#firstActReflection {
+  position: absolute;
+  display: none;
+}
+
+#firstActPhone {
+  position: absolute;
+  display: none;
+  width: 30px;
+  height: 56px;
+  right: 24%;
+  bottom: 33%;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(22, 30, 42, 0.98), rgba(12, 18, 28, 0.98));
+  border: 2px solid rgba(175, 205, 238, 0.38);
+  box-shadow:
+    0 0 0 1px rgba(20, 30, 44, 0.75),
+    0 10px 22px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(190, 225, 255, 0.25);
+  z-index: 7;
+  overflow: hidden;
+}
+
+#firstActPhone.show {
+  display: block;
+}
+
+#firstActPhone::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 12px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: rgba(80, 103, 129, 0.95);
+  box-shadow: 0 0 0 1px rgba(8, 12, 18, 0.8);
+}
+
+#firstActPhone::after {
+  content: "";
+  position: absolute;
+  inset: 10px 4px 6px 4px;
+  border-radius: 5px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(190, 224, 255, 0.22), transparent 45%),
+    linear-gradient(180deg, rgba(28, 48, 76, 0.95), rgba(10, 18, 28, 0.98));
+  border: 1px solid rgba(155, 195, 238, 0.22);
+}
+
+#firstActPhone.vibrate {
+  animation: phoneBuzz 130ms linear infinite;
+}
+
+@keyframes phoneBuzz {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(1px, 0); }
+  50% { transform: translate(-1px, 0); }
+  75% { transform: translate(1px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+#firstActMirror {
+  width: var(--mirror-width, 110px);
+  height: var(--mirror-height, 160px);
+  left: calc(44% - 55px);
+  bottom: 20%;
+  border: 2px solid rgba(205, 227, 255, 0.72);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(215, 236, 255, 0.33), rgba(120, 148, 182, 0.18)),
+    radial-gradient(circle at 50% 14%, rgba(235, 246, 255, 0.22), transparent 55%);
+  box-shadow:
+    inset 0 0 22px rgba(190, 220, 255, 0.22),
+    inset 0 0 0 1px rgba(234, 245, 255, 0.24),
+    0 12px 22px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(170, 210, 255, 0.16);
+  z-index: 5;
+}
+
+#firstActMirror.show {
+  display: block;
+}
+
+#firstActReflection {
+  width: 30px;
+  height: 84px;
+  left: 50%;
+  bottom: 18%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: auto 100%;
+  transform: translateX(var(--rx, 0px));
+  background-color: transparent;
+  border-radius: 0;
+  border: 0;
+  transition: transform 70ms linear, opacity 140ms linear;
+  opacity: calc(1 - var(--lag, 0) * 0.45);
+  z-index: 3;
+  filter: contrast(1.08) saturate(0.82) brightness(0.95) blur(0.35px);
+  animation: mirrorSignalNoise 220ms steps(2, end) infinite;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#firstActReflection.show {
+  display: block;
+}
+
+@keyframes mirrorSignalNoise {
+  0% { filter: contrast(1.08) saturate(0.82) brightness(0.95) blur(0.35px); opacity: calc((1 - var(--lag, 0) * 0.45) * 0.96); }
+  50% { filter: contrast(1.14) saturate(0.76) brightness(0.91) blur(0.5px); opacity: calc((1 - var(--lag, 0) * 0.45) * 0.86); }
+  100% { filter: contrast(1.1) saturate(0.8) brightness(0.94) blur(0.4px); opacity: calc((1 - var(--lag, 0) * 0.45) * 0.94); }
+}
+
+#firstActVoice,
+#firstActHint,
+#firstActCenter {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 160ms linear;
+}
+
+#firstActVoice.show,
+#firstActHint.show,
+#firstActCenter.show {
+  opacity: 1;
+}
+
+#firstActAudioPrompt {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(205, 225, 255, 0.3);
+  background: linear-gradient(135deg, rgba(12, 29, 51, 0.9), rgba(25, 58, 96, 0.86));
+  color: rgba(231, 240, 255, 0.94);
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  transition: opacity 180ms linear;
+  pointer-events: none;
+  z-index: 12;
+}
+
+#firstActAudioPrompt.show {
+  opacity: 1;
+}
+
+#firstActVoice {
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: rgb(241, 194, 50);
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.85);
+}
+
+#firstActHint {
+  left: 3%;
+  bottom: 8%;
+  font-size: 22px;
+  color: rgba(216, 226, 241, 0.62);
+}
+
+#firstActCenter {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-align: center;
+  color: rgb(241, 194, 50);
+  transition: none;
+}
+
+#firstActCenter.invasive {
+  font-size: 70px;
+  width: 88%;
+  color: #f6fbff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.75);
+}
+
+#firstActCenter.danger {
+  color: rgb(213, 166, 189);
+  text-shadow:
+    0 0 10px rgba(213, 166, 189, 0.34),
+    0 0 24px rgba(186, 126, 161, 0.28),
+    0 4px 20px rgba(0, 0, 0, 0.78);
+  animation: firstActDangerBlink 240ms steps(2, end) infinite;
+}
+
+@keyframes firstActDangerBlink {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.55;
+    filter: brightness(1.22);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+#firstActTitleWrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  opacity: 0;
+}
+
+#firstActTitleWrap.show {
+  opacity: 1;
+}
+
+#firstActTitle {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 88px);
+  letter-spacing: 1.2px;
+}
+
+#firstActSubtitle {
+  margin: 12px 0 0;
+  font-size: clamp(18px, 2vw, 28px);
+  color: rgba(210, 220, 235, 0.72);
+}
+
+#firstActScene.scene-internal {
+  background: linear-gradient(180deg, #171b22 0%, #0e1218 70%, #080b10 100%);
+}
+
+#firstActScene.scene-control {
+  background: linear-gradient(180deg, #151a22 0%, #090d12 100%);
+}
+
+#firstActScene.scene-marco {
+  background: linear-gradient(180deg, #232730 0%, #171b22 45%, #0e1117 100%);
+}
+
+#firstActScene.scene-corridor {
+  background: linear-gradient(90deg, #0e1218 0%, #171d24 48%, #0a0d12 100%);
+}
+
+

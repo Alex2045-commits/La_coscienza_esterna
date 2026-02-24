@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - La Coscienza Esterna</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="login.css">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" href="/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+</head>
+<body>
+  <button class="top-home-btn" onclick="window.location.href='../index/index.html'">
+    Home
+  </button>
+  <div class="pre-loader" id="preLoader">
+    <img src="/sfondi/icona_gioco.jpg" class="loading-gif" alt="loading"/>
+  </div>
+  <div class="scene-bg"></div>
+  <div class="container">
+    <div class="panel">
+      <h1>Accedi</h1>
+      <p class="subtitle">Entra in La Coscienza Esterna e continua la tua progressione.</p>
+
+      <form id="loginForm" autocomplete="on" novalidate>
+        <label class="field-label" for="identifier">Username o email</label>
+        <input id="identifier" type="text" placeholder="es. giocatore123 o email@example.com" required>
+
+        <label class="field-label" for="password">Password</label>
+        <div class="password-wrap">
+          <input id="password" type="password" placeholder="Inserisci password" required>
+          <button id="togglePasswordBtn" class="toggle-password" type="button" aria-label="Mostra password">Mostra</button>
+        </div>
+
+        <button id="btnLogin" type="submit">Login</button>
+        <button id="forgotPasswordBtn" class="secondary" type="button">Password dimenticata?</button>
+        <div id="error" class="message" aria-live="polite"></div>
+      </form>
+
+      <div class="meta-links">
+        <span>Non hai un account?</span>
+        <a href="/register/register.html">Registrati</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="login.js" defer></script>
+</body>
+</html>

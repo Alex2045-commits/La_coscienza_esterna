@@ -1,0 +1,211 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top, #1e3559 0%, #111a2b 70%);
+  cursor: none;
+}
+
+/* Gif del caricamento */
+.loading-gif {
+  max-width: 500px;
+}
+
+/* Contenitore del pre-loader */
+.pre-loader {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  background: linear-gradient(160deg, #121923, #1b2433);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Aggiunge la classe 'hidden' quando il caricamento è terminato */
+.pre-loader.hidden {
+  animation: fadeOut 1s ease-in-out forwards;
+}
+
+/* Animazione per scomparire il pre-loader */
+@keyframes fadeOut {
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Font personalizzato 
+@font-face {
+  font-family: 'PixelFont';
+  src: url('font/pixelfont.eot') format('embedded-opentype'),
+       url('font/pixelfont.woff') format('woff'),
+       url('font/pixelfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}*/
+
+.custom-cursor {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    pointer-events: none; /* Assicurati che il cursore non interferisca con gli altri eventi del mouse */
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+/* HUD GAME (badge in alto a sinistra) */
+#gameHud {
+    position: fixed;
+    top: 12px;
+    left: 14px;
+    z-index: 99999;
+    color: white;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(6, 13, 24, 0.86), rgba(18, 33, 54, 0.78));
+    border: 1px solid rgba(130, 185, 255, 0.3);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42);
+}
+
+#levelDisplay {
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: left;
+    letter-spacing: 0.4px;
+    color: #eef6ff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+}
+
+#coinsDisplay {
+    margin-top: 0;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffe089;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+}
+
+#heartsDisplay {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+}
+
+#heartsHudImage {
+    width: 236px;
+    max-width: 55vw;
+    height: auto;
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.75));
+}
+
+#coinAmount {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+#coinIcon {
+    width: 32px;
+    height: 32px;
+    margin-right: 6px;
+}
+
+/* Mini storyline */
+#storyHint {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 99998;
+    max-width: min(92vw, 980px);
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(10, 16, 26, 0.8), rgba(25, 46, 76, 0.72));
+    border: 1px solid rgba(147, 197, 253, 0.35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    color: #e5f0ff;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#storyHint p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.35;
+    letter-spacing: 0.2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+#gamePauseMenu {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100000;
+}
+
+#gamePauseMenu.show {
+  display: flex;
+}
+
+#gamePauseMenu .pause-card {
+  min-width: 280px;
+  max-width: 90vw;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(18, 26, 42, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+#gamePauseMenu .pause-title {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+#gamePauseMenu .pause-subtitle {
+  margin: 0 0 16px;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+#gamePauseMenu .pause-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#gamePauseMenu button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+#resumeGameBtn {
+  background: #16a34a;
+  color: #fff;
+}
+
+#leaveGameBtn {
+  background: #dc2626;
+  color: #fff;
+}

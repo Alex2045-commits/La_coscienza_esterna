@@ -1,0 +1,19 @@
+# Protezione dei file nascosti (come .env, .htaccess, etc.)
+<FilesMatch "^\.">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Abilita la riscrittura URL
+RewriteEngine On
+RewriteBase /admin/
+
+# Forza la gestione delle richieste a /admin/api/
+RewriteRule ^api/ - [L]
+
+# Escludi le risorse statiche (css, js, immagini) dalla riscrittura
+RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico)$
+
+# Reindirizza tutte le altre richieste a admin_dashboard.html
+RewriteCond %{REQUEST_URI} !^/admin/admin_dashboard\.html$
+RewriteRule ^.*$ /admin/admin_dashboard.html [L]

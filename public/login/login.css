@@ -1,0 +1,240 @@
+:root {
+  --bg0: #071220;
+  --bg1: #10263f;
+  --panel: rgba(9, 20, 35, 0.86);
+  --panel-border: rgba(120, 182, 255, 0.28);
+  --text: #e8f4ff;
+  --muted: #9bb9d4;
+  --accent: #32d2ff;
+  --accent-2: #7dffbb;
+  --danger: #ff7c7c;
+}
+
+.top-home-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: auto;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  color: var(--accent);
+  background: rgba(9, 20, 35, 0.65);
+
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+
+  cursor: pointer;
+  z-index: 9999;
+
+  backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+}
+
+.top-home-btn:hover {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #04131f;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(50, 210, 255, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+html, body {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: radial-gradient(1200px 700px at 15% 20%, #18456f 0%, transparent 60%),
+              radial-gradient(1200px 700px at 85% 80%, #194d43 0%, transparent 62%),
+              linear-gradient(130deg, var(--bg0), var(--bg1));
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 22px;
+  overflow-x: hidden;
+}
+
+.scene-bg {
+  position: fixed;
+  inset: 0;
+  background: url("../sfondi/login-background.jpg") center/cover no-repeat;
+  opacity: 0.18;
+  filter: blur(2px) saturate(1.1);
+  z-index: -1;
+}
+
+.loading-gif {
+  width: 148px;
+  height: 148px;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.pre-loader {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: #0a1422;
+  display: grid;
+  place-items: center;
+}
+
+.pre-loader.hidden {
+  animation: fadeOut 0.55s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.container {
+  width: 100%;
+  max-width: 460px;
+}
+
+.panel {
+  background: linear-gradient(160deg, var(--panel), rgba(8, 18, 32, 0.92));
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  padding: 30px 26px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.35;
+}
+
+#loginForm {
+  display: grid;
+  gap: 10px;
+}
+
+.field-label {
+  font-size: 0.9rem;
+  color: #b9d5ee;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid rgba(145, 190, 240, 0.34);
+  border-radius: 11px;
+  font-size: 0.98rem;
+  color: var(--text);
+  background: rgba(11, 27, 45, 0.82);
+}
+
+input::placeholder {
+  color: #8eafcc;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(50, 210, 255, 0.19);
+}
+
+.password-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.toggle-password {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid rgba(150, 193, 237, 0.3);
+  background: rgba(98, 152, 212, 0.18);
+  color: #cfe6ff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.toggle-password:hover {
+  background: rgba(98, 152, 212, 0.28);
+}
+
+button {
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.97rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#btnLogin {
+  margin-top: 6px;
+  color: #04131f;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+#btnLogin:hover {
+  filter: brightness(1.05);
+}
+
+.secondary {
+  color: #cfe6ff;
+  background: rgba(98, 152, 212, 0.18);
+  border: 1px solid rgba(150, 193, 237, 0.3);
+}
+
+.secondary:hover {
+  background: rgba(98, 152, 212, 0.28);
+}
+
+.message {
+  min-height: 20px;
+  margin-top: 2px;
+  color: var(--danger);
+  font-size: 0.92rem;
+}
+
+.meta-links {
+  margin-top: 8px;
+  font-size: 0.93rem;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+}
+
+.meta-links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.meta-links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .panel {
+    padding: 24px 18px;
+  }
+}

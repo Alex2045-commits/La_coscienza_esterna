@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LA COSCIENZA ESTERNA</title>
+
+    <!--css-->
+    <link rel="stylesheet" href="livello_0.css">
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="../../manifest.json">
+ 
+    <!-- Icons -->
+    <link rel="icon" href="../../icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+    
+  </head>
+  <body>
+    <!-- HUD XP / LEVEL / COINS -->
+    <div id="gameHud">osno
+
+        <div id="xpContainer">
+            <div id="xpBar"></div>
+        </div>
+
+        <div id="levelDisplay">Stage 1 | Player Lv 1</div>
+
+        <div id="coinsDisplay">
+            <img src="../../icons/favicon-32x32.png" id="coinIcon" alt="Coin">
+            <span id="coinAmount">0</span>
+        </div>
+
+        <div id="heartsDisplay">
+            <img src="CuoriGioco/3cuori.png" id="heartsHudImage" alt="Vita">
+        </div>
+
+    </div>
+    <!-- Pre-loader che viene mostrato mentre carichiamo le risorse -->
+    <div class="pre-loader" id="preLoader">
+      <img src="../../sfondi/icona_gioco.jpg" class="loading-gif" alt="loading"/>
+    </div>
+    
+    <div id="GameDiv">
+      <canvas id="GameCanvas">Il tuo browser non supporta l'elemento Canvas Html5</canvas>
+    </div>
+
+    <div id="storyHint" aria-live="polite">
+      <p>
+        La frontiera di Embergate e il primo varco: resta lucido e prepara l'assalto verso le rovine.
+      </p>
+    </div>
+
+    <!-- I tuoi script JavaScript -->
+    <script src="js/main.js"></script>
+    
+  </body>
+</html>

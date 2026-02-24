@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <title>Registrazione</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="../manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" href="../icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+</head>
+<body>
+    <!-- email_otp.html -->
+    <form id="emailOtpForm">
+        <label>Codice inviato via email:</label>
+        <input type="text" id="emailOtpInput" maxlength="6" required>
+        <button type="submit">Verifica</button>
+        <div id="error"></div>
+    </form>
+    <script src="email_otp.js"></script>
+</body>
