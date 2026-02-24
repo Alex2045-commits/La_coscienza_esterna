@@ -1,11 +1,8 @@
 # La Coscienza Esterna
 
-Security-focused full-stack web game platform featuring hardened authentication
-(session, JWT, 2FA), user/admin roles, real-time security alerts and interactive
-game progression.
+Piattaforma di gioco web full-stack incentrata sulla sicurezza, con autenticazione rafforzata (sessione, JWT, 2FA), ruoli utente/amministratore, avvisi di sicurezza in tempo reale e progressione di gioco interattiva.
 
-Built to demonstrate secure backend/frontend integration, auth design choices,
-and production-oriented project structure.
+Sviluppata per dimostrare un'integrazione sicura tra backend e frontend, scelte di progettazione dell'autenticazione e una struttura di progetto orientata alla produzione.
 
 ## Quick Start (Local)
 
