@@ -13,6 +13,7 @@ let playerProgress = {
 let CURRENT_ACCOUNT = null;
 let RUN_TOKEN = null;
 const MAX_PLAYABLE_LEVEL = 4;
+let FIRST_LEVEL_COMPLETED = false;
 
 // debounce / throttle per salvataggio
 let _saveTimeout = null;
@@ -35,6 +36,32 @@ function unlockPlayableLevel(level) {
   if (!Number.isFinite(current) || safeLevel > current) {
     localStorage.setItem(key, String(safeLevel));
   }
+}
+
+function setCurrentStoryLevel(level) {
+  const safeLevel = Math.max(1, Math.min(MAX_PLAYABLE_LEVEL, Number(level) || 1));
+  const uid = CURRENT_ACCOUNT && CURRENT_ACCOUNT.id ? CURRENT_ACCOUNT.id : "guest";
+  localStorage.setItem(`eov_current_level_u${uid}`, String(safeLevel));
+}
+
+async function completeFirstLevelAndGoNext() {
+  if (FIRST_LEVEL_COMPLETED) return;
+  FIRST_LEVEL_COMPLETED = true;
+
+  try {
+    await giveXP("l0_level_complete", { silent: true });
+  } catch (_) {}
+
+  unlockPlayableLevel(2);
+  setCurrentStoryLevel(2);
+
+  try {
+    await saveProgress({ inventory: [] });
+  } catch (_) {}
+
+  setTimeout(() => {
+    window.location.href = "/game/livello1/livello1.html";
+  }, 2200);
 }
 
 // =========================
@@ -101,21 +128,21 @@ function ensureGlobalGameActions() {
   const homeBtn = mkBtn('Home');
   homeBtn.onclick = () => {
     if (CURRENT_ACCOUNT && CURRENT_ACCOUNT.role === 'admin') {
-      window.location.href = 'http://localhost:8000/admin/admin_dashboard.php';
+      window.location.href = '/admin/admin_dashboard.php';
       return;
     }
-    window.location.href = 'http://localhost:4000/index/index.html';
+    window.location.href = '/index/index.html';
   };
 
   const logoutBtn = mkBtn('Logout');
   logoutBtn.onclick = async () => {
     try {
-      await fetch('http://localhost:8000/api/logout.php', {
+      await fetch('/api/logout.php', {
         method: 'POST',
         credentials: 'include'
       });
     } catch (e) {}
-    window.location.href = 'http://localhost:4000/index/index.html';
+    window.location.href = '/index/index.html';
   };
 
   wrap.appendChild(homeBtn);
@@ -129,7 +156,7 @@ function xpNeededForLevel(level) {
 
 async function loadProgressFromServer() {
   try {
-    const res = await fetch('http://localhost:8000/api/user/get_progress.php', {
+    const res = await fetch('/api/user/get_progress.php', {
       method: 'GET',
       credentials: 'include'
     });
@@ -162,7 +189,7 @@ async function loadProgressFromServer() {
 
 async function requireLoggedAccount() {
   try {
-    const res = await fetch('http://localhost:8000/api/me.php', {
+    const res = await fetch('/api/me.php', {
       method: 'GET',
       credentials: 'include'
     });
@@ -1438,10 +1465,10 @@ async function startDemoGameplay() {
     // Show cursor during narrative phase
     if (root) root.classList.remove("hide-cursor");
 
-    // Wait 30 seconds (free time) before showing narrative text
     // Pause functionality - declare globally
     window.isPaused = false;
     window.pauseMenu = null;
+    let narrativeEscapeHandler = null;
     
     // Wait function that respects pause
     const waitMs = async (ms) => {
@@ -1455,32 +1482,7 @@ async function startDemoGameplay() {
         }
       }
     };
-    await waitMs(8000);
-
-    // Check if narrative already completed - skip to ATTO screen
-    const savedProgress = localStorage.getItem('eov_atto1_progress');
-    if (savedProgress === 'narrative_complete') {
-      // Skip the narrative, go directly to ATTO screen
-      // Show placeholder and skip to school corridor
-      scene.className = "scene-school-atmosphere";
-      // Continue with school corridor setup (will be handled later)
-    }
-
-    let narrativeBox = document.getElementById("narrativeTextBox");
-    if (!narrativeBox) {
-      narrativeBox = document.createElement("div");
-      narrativeBox.id = "narrativeTextBox";
-      scene.appendChild(narrativeBox);
-    }
-
-    // Create skip button (hidden by default - right click will be used)
-    const skipBtn = document.createElement("button");
-    skipBtn.id = "narrativeSkipBtn";
-    skipBtn.textContent = "SALTA >";
-    skipBtn.style.cssText = "position: absolute; bottom: 30px; right: 30px; padding: 12px 24px; background: rgba(100,80,60,0.8); border: 1px solid rgba(150,130,100,0.5); color: #c9b896; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; z-index: 50; opacity: 0; transition: opacity 0.5s; border-radius: 4px;";
-    scene.appendChild(skipBtn);
-
-    // Create pause button
+    // Create pause button immediately at the beginning of Atto 1
     const pauseBtn = document.createElement("button");
     pauseBtn.id = "narrativePauseBtn";
     pauseBtn.textContent = "PAUSA";
@@ -1521,7 +1523,7 @@ async function startDemoGameplay() {
       
       document.getElementById("pauseAbandon").onclick = () => {
         // Go to main menu / restart
-        window.location.href = "/user/user_dashboard.php";
+        window.location.href = "/user/user_dashboard.html";
       };
       
       document.getElementById("pauseLogout").onclick = () => {
@@ -1544,12 +1546,38 @@ async function startDemoGameplay() {
     pauseBtn.onclick = togglePause;
     
     // ESC key to toggle pause
-    window.addEventListener("keydown", (e) => {
+    narrativeEscapeHandler = (e) => {
       if (e.key === "Escape") {
         e.preventDefault();
         togglePause();
       }
-    });
+    };
+    window.addEventListener("keydown", narrativeEscapeHandler);
+
+    await waitMs(8000);
+
+    // Check if narrative already completed - skip to ATTO screen
+    const savedProgress = localStorage.getItem('eov_atto1_progress');
+    if (savedProgress === 'narrative_complete') {
+      // Skip the narrative, go directly to ATTO screen
+      // Show placeholder and skip to school corridor
+      scene.className = "scene-school-atmosphere";
+      // Continue with school corridor setup (will be handled later)
+    }
+
+    let narrativeBox = document.getElementById("narrativeTextBox");
+    if (!narrativeBox) {
+      narrativeBox = document.createElement("div");
+      narrativeBox.id = "narrativeTextBox";
+      scene.appendChild(narrativeBox);
+    }
+
+    // Create skip button (hidden by default - right click will be used)
+    const skipBtn = document.createElement("button");
+    skipBtn.id = "narrativeSkipBtn";
+    skipBtn.textContent = "SALTA >";
+    skipBtn.style.cssText = "position: absolute; bottom: 30px; right: 30px; padding: 12px 24px; background: rgba(100,80,60,0.8); border: 1px solid rgba(150,130,100,0.5); color: #c9b896; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; z-index: 50; opacity: 0; transition: opacity 0.5s; border-radius: 4px;";
+    scene.appendChild(skipBtn);
 
     // Show buttons immediately
     skipBtn.style.opacity = "0.7";
@@ -1593,7 +1621,12 @@ async function startDemoGameplay() {
     skipBtn.addEventListener("click", handleRightClick);
 
     // All narrative lines in order
+    const chapterOneBeats = (window.EOV_STORY_BIBLE?.chapters || [])
+      .find((c) => c.id === 1)?.beats || [];
+
     const allLines = [
+      ...chapterOneBeats,
+
       "La vita è sempre stata più difficile per Marco...",
 
       "...Non perché fosse fragile\nMa perché ha imparato presto a non reagire...",
@@ -1622,6 +1655,8 @@ async function startDemoGameplay() {
       "Perché chi non trova resistenza…\nImpara a spingere più forte.",
     ];
 
+    const resolveNarrativeColor = window.EOV_getNarrativeColor || ((_, fallback) => fallback || "#c9b896");
+
     // Show each line for ~2.5s, blank lines = 0.8s pause
     for (let i = 0; i < allLines.length; i++) {
       if (skipNarrative) {
@@ -1637,6 +1672,7 @@ async function startDemoGameplay() {
         continue;
       }
       narrativeBox.textContent = line;
+      narrativeBox.style.color = resolveNarrativeColor(line, "#c9b896");
       narrativeBox.classList.add("show");
       await waitMs(4500);
       if (skipNarrative) {
@@ -1657,6 +1693,13 @@ async function startDemoGameplay() {
     localStorage.setItem('eov_atto1_progress', 'narrative_complete');
     // Remove right-click listener
     scene.removeEventListener("contextmenu", handleRightClick);
+    if (narrativeEscapeHandler) {
+      window.removeEventListener("keydown", narrativeEscapeHandler);
+      narrativeEscapeHandler = null;
+    }
+    if (window.togglePause === togglePause) {
+      window.togglePause = null;
+    }
 
     // Brief pause before school scene
     narrativeBox.classList.remove("show");
@@ -1757,13 +1800,7 @@ async function startDemoGameplay() {
     document.body.appendChild(gamePauseBtn);
 
     const gameTogglePause = () => {
-      console.log("gameTogglePause called");
-      // Remove any existing pause menus
-      const existingPauseMenus = document.querySelectorAll('#pauseMenu');
-      existingPauseMenus.forEach(menu => menu.remove());
-      
       const existingMenu = document.getElementById("pauseMenu");
-      console.log("Existing menu:", existingMenu);
       if (existingMenu) {
         existingMenu.remove();
         window.isPaused = false;
@@ -1803,7 +1840,7 @@ async function startDemoGameplay() {
           e.preventDefault();
           e.stopPropagation();
           // Redirect to index with cache-busting
-          window.location.href = 'http://localhost:4000/index/index.html?t=' + Date.now();
+          window.location.href = '/index/index.html?t=' + Date.now();
         });
       }
 
@@ -1813,13 +1850,13 @@ async function startDemoGameplay() {
           e.stopPropagation();
           // First logout, then redirect to login
           try {
-            await fetch('http://localhost:8000/api/logout.php', {
+            await fetch('/api/logout.php', {
               method: 'POST',
               credentials: 'include'
             });
           } catch (err) {}
           // Redirect to login with cache-busting
-          window.location.href = 'http://localhost:4000/login/login.html?t=' + Date.now();
+          window.location.href = '/login/login.html?t=' + Date.now();
         });
       }
 
@@ -2308,6 +2345,7 @@ async function startDemoGameplay() {
                     setTimeout(() => {
                       finalPhrase.textContent = "Lo hai giÃ  fatto molte volte.";
                       finalPhrase.classList.add("show");
+                      completeFirstLevelAndGoNext();
                     }, 1500);
                   }
                 }, 800);
@@ -2353,7 +2391,7 @@ async function saveProgress(payload = null) {
     try {
       const csrf = getCookie('csrf_token') || '';
 
-      const res = await fetch('http://localhost:8000/api/save_progress.php', {
+      const res = await fetch('/api/save_progress.php', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -2397,7 +2435,7 @@ async function giveXP(action = 'monster_kill', options = {}) {
     const prevLevel = playerProgress.level;
     const prevCoins = playerProgress.coins;
 
-    const res = await fetch('http://localhost:8000/api/user/gain_xp.php', {
+    const res = await fetch('/api/user/gain_xp.php', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -2468,7 +2506,7 @@ async function giveXP(action = 'monster_kill', options = {}) {
     console.log("User:", user);
     if (!user) {
       console.log("No user, redirecting to login...");
-      window.location.href = 'http://localhost:4000/login/login.html';
+      window.location.href = '/login/login.html';
       return;
     }
     ensureFullscreenKick();

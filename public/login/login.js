@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password");
   const togglePasswordBtn = document.getElementById("togglePasswordBtn");
   const err = document.getElementById("error");
-  const USER_DASHBOARD_URL = `${APP_ORIGIN}/user/user_dashboard.php`;
+  const USER_DASHBOARD_URL = `${APP_ORIGIN}/user/user_dashboard.html`;
 
   function clampLevel(n) {
     const v = Number(n || 1);
@@ -101,12 +101,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= FETCH CON TIMEOUT ================= */
   async function waitForSessionReady(maxAttempts = 6, delayMs = 220) {
+    const jwt = localStorage.getItem("auth_token_jwt") || "";
     for (let i = 0; i < maxAttempts; i++) {
       try {
         const res = await fetch(`${API_BASE}/me.php`, {
           method: "GET",
           credentials: "include",
-          cache: "no-store"
+          cache: "no-store",
+          headers: {
+            ...(jwt && { Authorization: `Bearer ${jwt}` })
+          }
         });
         if (res.ok) {
           const me = await res.json().catch(() => null);
@@ -156,6 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         err.textContent = json.error || "Login fallito";
         return;
+      }
+
+      // Salva token JWT per i check successivi (fallback cross-session/cookie)
+      if (json.auth_token_jwt) {
+        localStorage.setItem("auth_token_jwt", json.auth_token_jwt);
       }
 
       /* ================= EMAIL OTP STEP-UP ================= */

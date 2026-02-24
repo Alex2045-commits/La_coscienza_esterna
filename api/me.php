@@ -70,6 +70,30 @@ if (preg_match('/^Bearer\s+(.+)$/i', $authHeader, $m)) {
     }
 }
 
+// 3) Fallback JWT via cookie access_token
+$cookieJwt = (string)($_COOKIE['access_token'] ?? '');
+if ($cookieJwt !== '') {
+    try {
+        $payload = TokenManager::validateJwt($cookieJwt, $GLOBALS['pdo']);
+        $uid = (int)($payload['user_id'] ?? $payload['id'] ?? 0);
+        if ($uid > 0) {
+            $stmt = $GLOBALS['pdo']->prepare("SELECT id, username, role, avatar FROM users WHERE id = ? LIMIT 1");
+            $stmt->execute([$uid]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($user) {
+                // riallinea anche la sessione PHP
+                $_SESSION['user_id'] = (int)$user['id'];
+                $_SESSION['username'] = (string)$user['username'];
+                $_SESSION['role'] = (string)$user['role'];
+                $_SESSION['avatar'] = $user['avatar'] ?? null;
+                me_response_from_user($user);
+            }
+        }
+    } catch (Throwable $e) {
+        // cookie JWT non valido -> continua e risponde 401
+    }
+}
+
 http_response_code(401);
 echo json_encode(["error" => "AUTH_REQUIRED"]);
 exit;

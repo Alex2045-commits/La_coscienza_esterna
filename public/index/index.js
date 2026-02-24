@@ -1,9 +1,9 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = window.location.origin;
 const LEVEL_URLS = {
-  1: "http://localhost:4000/game/livello0/livello_0.html",
-  2: "http://localhost:4000/game/livello1/livello1.html",
-  3: "http://localhost:4000/game/livello2/livello2.html",
-  4: "http://localhost:4000/game/livello3/livello3.html"
+  1: `${window.location.origin}/game/livello0/livello_0.html`,
+  2: `${window.location.origin}/game/livello1/livello1.html`,
+  3: `${window.location.origin}/game/livello2/livello2.html`,
+  4: `${window.location.origin}/game/livello3/livello3.html`
 };
 let CURRENT_USER = null;
 let CURRENT_UNLOCKED_LEVEL = 1;
@@ -22,7 +22,7 @@ function legacyUnlockedKeys(userId) {
 }
 
 function redirectToOfflineGame() {
-  window.location.href = "http://localhost:4000/gameOffline/offline.html";
+  window.location.href = `${window.location.origin}/gameOffline/offline.html`;
 }
 
 async function performLogout() {
@@ -34,7 +34,7 @@ async function performLogout() {
   } catch (e) {
     console.warn("logout error:", e);
   } finally {
-    window.location.href = "http://localhost:4000/index/index.html";
+    window.location.href = `${window.location.origin}/index/index.html`;
   }
 }
 
@@ -45,18 +45,62 @@ function clampUnlockedLevel(level) {
 }
 
 async function getLoggedUser() {
+  const jwt = localStorage.getItem("auth_token_jwt") || "";
   try {
     const res = await fetch(`${API_BASE}/api/session_status.php`, {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {})
+      }
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // fallback me.php
+      const meRes = await fetch(`${API_BASE}/api/me.php`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {})
+        }
+      });
+      if (!meRes.ok) return null;
+      const me = await meRes.json().catch(() => null);
+      return (me && me.id) ? me : null;
+    }
     const payload = await res.json().catch(() => null);
-    if (!payload || !payload.authenticated || !payload.user || !payload.user.id) return null;
+    if (!payload || !payload.authenticated || !payload.user || !payload.user.id) {
+      const meRes = await fetch(`${API_BASE}/api/me.php`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {})
+        }
+      });
+      if (!meRes.ok) return null;
+      const me = await meRes.json().catch(() => null);
+      return (me && me.id) ? me : null;
+    }
     return payload.user;
   } catch (e) {
     console.warn("session_status non disponibile:", e);
-    return null;
+    try {
+      const meRes = await fetch(`${API_BASE}/api/me.php`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {})
+        }
+      });
+      if (!meRes.ok) return null;
+      const me = await meRes.json().catch(() => null);
+      return (me && me.id) ? me : null;
+    } catch (_) {
+      return null;
+    }
   }
 }
 
@@ -117,8 +161,8 @@ function updateAuthButtons(user) {
   }
 
   primaryLink.href = user.role === "admin"
-    ? "http://localhost:8000/admin/admin_dashboard.php"
-    : "http://localhost:8000/user/user_dashboard.php";
+    ? `${window.location.origin}/admin/admin_dashboard.php`
+    : `${window.location.origin}/user/user_dashboard.html`;
   primaryBtn.textContent = "Dashboard";
 
   secondaryLink.href = "#";

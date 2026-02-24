@@ -7,6 +7,15 @@ function getCsrfToken() {
          (document.cookie.split('; ').find(c => c.startsWith('csrf_token='))?.split('=')[1] || '');
 }
 
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('FILE_READ_ERROR'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // toast
 function toast(msg, t = 'info', tms = 2500) {
   const c = document.getElementById('toastContainer');
@@ -37,10 +46,10 @@ const PREMIUM_AVATAR_REQUIREMENTS = {
 };
 
 const START_LEVEL_URLS = {
-  1: 'http://localhost:4000/game/livello0/livello_0.html',
-  2: 'http://localhost:4000/game/livello1/livello1.html',
-  3: 'http://localhost:4000/game/livello2/livello2.html',
-  4: 'http://localhost:4000/game/livello3/livello3.html'
+  1: '/game/livello0/livello_0.html',
+  2: '/game/livello1/livello1.html',
+  3: '/game/livello2/livello2.html',
+  4: '/game/livello3/livello3.html'
 };
 
 // xp formula
@@ -85,7 +94,7 @@ function showSection(section) {
 
 async function pingActivity() {
   try {
-    await safeFetch('http://localhost:8000/api/update_activity.php', { method: 'POST' });
+    await safeFetch('/api/update_activity.php', { method: 'POST' });
   } catch (_) {
     // ignore heartbeat failures
   }
@@ -101,7 +110,7 @@ async function renderAll() {
 
 // load profile
 async function loadProfile() {
-  const r = await safeFetch('http://localhost:8000/api/user/user_info.php');
+  const r = await safeFetch('/api/user/user_info.php');
   if (!r.ok) { toast('Devi autenticarti', 'error'); return; }
   const j = await r.json();
   const u = j.user || j;
@@ -112,8 +121,8 @@ async function loadProfile() {
   document.getElementById('roleBadge').textContent = u.role;
   const avatarEl = document.getElementById('avatar');
   const avatarName = (u.avatar && String(u.avatar).trim()) ? String(u.avatar).trim() : 'avatar1.png';
-  const avatarUrl = `http://localhost:4000/avatars/${avatarName}`;
-  const fallbackUrl = 'http://localhost:4000/avatars/avatar1.png';
+  const avatarUrl = `/avatars/${avatarName}`;
+  const fallbackUrl = '/avatars/avatar1.png';
   const probe = new Image();
   probe.onload = () => {
     avatarEl.style.backgroundImage = `url(${avatarUrl})`;
@@ -134,7 +143,7 @@ async function loadProfile() {
 
 // load progress
 async function loadProgress() {
-  const r = await safeFetch('http://localhost:8000/api/user/get_progress.php');
+  const r = await safeFetch('/api/user/get_progress.php');
   if (!r.ok) {
     STATE.progress = { level: 1, experience: 0, coins: 0, inventory: {} };
     updateProgressUI();
@@ -211,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   document.getElementById('saveProgress').onclick = async () => {
-    const res = await safeFetch('http://localhost:8000/api/save_progress.php', {
+    const res = await safeFetch('/api/save_progress.php', {
       method: 'POST',
       body: JSON.stringify({ inventory: STATE.progress.inventory })
     });
@@ -226,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('randomAvatar').onclick = async () => {
     const idx = Math.floor(Math.random() * 25) + 1;
     const f = `avatar${idx}.png`;
-    const res = await safeFetch('http://localhost:8000/api/avatar_select.php', { method: 'POST', body: JSON.stringify({ avatar: f }) });
+    const res = await safeFetch('/api/avatar_select.php', { method: 'POST', body: JSON.stringify({ avatar: f }) });
     const j = await res.json();
     if (j.ok) {
       toast('Avatar aggiornato');
@@ -246,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return toast(`Richiesti XP ${req.xp} e C ${req.coins}`, 'error');
     }
 
-    const res = await safeFetch('http://localhost:8000/api/avatar_select.php', {
+    const res = await safeFetch('/api/avatar_select.php', {
       method: 'POST',
       body: JSON.stringify({ avatar: selectedAvatar })
     });
@@ -281,24 +290,41 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('uploadBtn').addEventListener('click', async () => {
-    const f = document.getElementById('avatarUpload').files[0];
-    if (!f) return toast('Seleziona un file', 'error');
-    const fd = new FormData();
-    fd.append('avatar', f);
-    const token = getCsrfToken();
-    const res = await fetch('http://localhost:8000/api/avatar_upload.php', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-CSRF-Token': token },
-      body: fd
-    });
-    const j = await res.json();
-    if (j.ok) {
-      toast('Upload OK');
-      await loadProfile();
-      await loadAvatarChoices();
-    } else {
-      toast('Upload error: ' + (j.error || ''), 'error');
+    try {
+      const f = document.getElementById('avatarUpload').files[0];
+      if (!f) return toast('Seleziona un file', 'error');
+
+      const allowed = ['image/png', 'image/jpeg'];
+      if (!allowed.includes(f.type)) return toast('Formato non valido (solo PNG/JPG)', 'error');
+      if (f.size > 2 * 1024 * 1024) return toast('File troppo grande (max 2MB)', 'error');
+
+      const dataUrl = await fileToDataUrl(f);
+      const token = getCsrfToken();
+      const authToken = localStorage.getItem('auth_token_jwt') || '';
+      const res = await fetch('/api/avatar_upload.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'X-CSRF-Token': token,
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+        },
+        body: JSON.stringify({
+          avatar_base64: dataUrl,
+          filename: f.name || 'avatar.png'
+        })
+      });
+
+      const j = await res.json();
+      if (j.ok) {
+        toast('Upload OK');
+        await loadProfile();
+        await loadAvatarChoices();
+      } else {
+        toast('Upload error: ' + (j.error || ''), 'error');
+      }
+    } catch (_) {
+      toast('Upload fallito', 'error');
     }
   });
 
@@ -322,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnGoIndex = document.getElementById('btnGoIndex');
   if (btnGoIndex) {
     btnGoIndex.onclick = () => {
-      window.location.href = 'http://localhost:4000/index/index.html';
+      window.location.href = '/index/index.html';
     };
   }
 
@@ -374,7 +400,7 @@ async function loadAvatarChoices() {
     if (!unlocked && canBuy) card.classList.add('can-buy');
 
     const img = document.createElement('img');
-    img.src = 'http://localhost:4000/avatars/' + f;
+    img.src = '/avatars/' + f;
     img.alt = f;
 
     const meta = document.createElement('span');
@@ -394,7 +420,7 @@ async function loadAvatarChoices() {
       }
       [...list.children].forEach(x => x.classList.remove('selected'));
       card.classList.add('selected');
-      document.getElementById('avatar').style.backgroundImage = `url(http://localhost:4000/avatars/${f})`;
+      document.getElementById('avatar').style.backgroundImage = `url(/avatars/${f})`;
       selectedAvatar = f;
     };
 
@@ -417,7 +443,7 @@ async function loadNotifications() {
   const nextBtn = document.getElementById('notifNext');
   if (!tbody) return;
 
-  const url = `http://localhost:8000/api/notifications.php?page=${NOTIFS.page}&per_page=${NOTIFS.perPage}`;
+  const url = `/api/notifications.php?page=${NOTIFS.page}&per_page=${NOTIFS.perPage}`;
   const r = await safeFetch(url);
   if (!r.ok) {
     tbody.innerHTML = '<tr><td colspan="2">Impossibile caricare le notifiche.</td></tr>';
@@ -488,8 +514,36 @@ async function loadAdminSecurityStats() {
 }
 
 // initial auth + load
+async function ensureAuthenticatedUser(maxAttempts = 10, delayMs = 250) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const me = await checkLogin();
+    if (me && (me.role === 'user' || me.role === 'admin')) {
+      return me;
+    }
+
+    try {
+      const res = await safeFetch('/api/session_status.php', {
+        method: 'GET',
+        cache: 'no-store'
+      });
+      if (res.ok) {
+        const payload = await res.json().catch(() => null);
+        if (payload?.authenticated && payload?.user?.id) {
+          return payload.user;
+        }
+      }
+    } catch (_) {
+      // ignore and retry
+    }
+
+    await new Promise(r => setTimeout(r, delayMs));
+  }
+
+  return null;
+}
+
 (async () => {
-  const me = await checkLogin();
+  const me = await ensureAuthenticatedUser();
   if (!me || (me.role !== 'user' && me.role !== 'admin')) {
     window.location.href = '/login/login.html';
     return;
@@ -503,3 +557,4 @@ async function loadAdminSecurityStats() {
     if (sec) sec.style.display = 'none';
   }
 })();
+

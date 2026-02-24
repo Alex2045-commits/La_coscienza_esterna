@@ -1,7 +1,6 @@
 // ===============================
 // AUTH + SAFE FETCH HELPERS
 // ===============================
-//admin:$2y$10$3C5exW9.YsNXwud.ytJYfeSZsUVZuaaR7LQY8kCoDdDBnxP5/lNdm
 const APP_ORIGIN = window.location.origin;
 const API_BASE = `${APP_ORIGIN}/api`;
 

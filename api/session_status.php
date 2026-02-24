@@ -5,6 +5,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/startSecureSession.php';
+require_once __DIR__ . '/token.php';
 
 header('Content-Type: application/json; charset=utf-8');
 $allowedOrigins = ["http://localhost:4000", "http://localhost:8000"];
@@ -26,12 +27,38 @@ startSecureSession();
 
 $uid = (int)($_SESSION['user_id'] ?? 0);
 if ($uid <= 0) {
-    echo json_encode([
-        'ok' => true,
-        'authenticated' => false,
-        'user' => null
-    ]);
-    exit;
+    // Fallback Authorization header JWT
+    $authHeader = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+    if (preg_match('/^Bearer\s+(.+)$/i', $authHeader, $m)) {
+        try {
+            $payload = TokenManager::validateJwt($m[1], $pdo);
+            $uid = (int)($payload['user_id'] ?? 0);
+        } catch (Throwable $e) {
+            $uid = 0;
+        }
+    }
+
+    // Fallback cookie JWT
+    if ($uid <= 0) {
+        $cookieJwt = (string)($_COOKIE['access_token'] ?? '');
+        if ($cookieJwt !== '') {
+            try {
+                $payload = TokenManager::validateJwt($cookieJwt, $pdo);
+                $uid = (int)($payload['user_id'] ?? $payload['id'] ?? 0);
+            } catch (Throwable $e) {
+                $uid = 0;
+            }
+        }
+    }
+
+    if ($uid <= 0) {
+        echo json_encode([
+            'ok' => true,
+            'authenticated' => false,
+            'user' => null
+        ]);
+        exit;
+    }
 }
 
 $stmt = $pdo->prepare("SELECT id, username, role, avatar FROM users WHERE id = ? LIMIT 1");
@@ -45,6 +72,15 @@ if (!$user) {
         'user' => null
     ]);
     exit;
+}
+
+// Reidrata sessione per stabilita' cross-page
+$_SESSION['user_id'] = (int)$user['id'];
+$_SESSION['username'] = (string)$user['username'];
+$_SESSION['role'] = (string)$user['role'];
+$_SESSION['avatar'] = $user['avatar'] ?? null;
+if (($_SESSION['role'] ?? '') === 'admin') {
+    $_SESSION['admin_id'] = (int)$user['id'];
 }
 
 echo json_encode([

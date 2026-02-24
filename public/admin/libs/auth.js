@@ -126,17 +126,17 @@ export function bindLogout() {
     closeModal();
 
     try {
-      const res = await fetch("http://localhost:8000/api/logout.php", {
+      const res = await fetch("/api/logout.php", {
         method: "POST",
         credentials: "include",
         keepalive: true
       });
       if (!res.ok) throw new Error("Logout failed");
-      window.location.replace("http://localhost:4000/login/login.html");
+      window.location.replace("/login/login.html");
     } catch (e) {
       console.error("Errore logout:", e);
       // In alcuni browser il redirect puo' interrompere la fetch, ma il logout lato server e' gia' eseguito.
-      window.location.replace("http://localhost:4000/login/login.html");
+      window.location.replace("/login/login.html");
     }
   });
 
@@ -161,14 +161,14 @@ export function bindLogout() {
 
 export async function logout() {
   try{
-    const res = await fetch("http://localhost:8000/api/logout.php", {
+    const res = await fetch("/api/logout.php", {
       method: "POST",
       credentials: "include"
     });
 
     if (!res.ok) throw new Error("Logout failed");
 
-    window.location.replace("http://localhost:4000/login/login.html");
+    window.location.replace("/login/login.html");
   } catch (e) {
     console.error("Errore logout:", e);
     alert("Errore imprevisto durante il logout");

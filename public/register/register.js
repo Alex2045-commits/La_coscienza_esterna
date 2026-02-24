@@ -19,8 +19,8 @@ async function blockIfAlreadyLogged() {
     if (!payload || !payload.authenticated || !payload.user || !payload.user.id) return;
     const me = payload.user;
     window.location.href = me.role === "admin"
-      ? "http://localhost:8000/admin/admin_dashboard.php"
-      : "http://localhost:8000/user/user_dashboard.php";
+      ? `${window.location.origin}/admin/admin_dashboard.php`
+      : `${window.location.origin}/user/user_dashboard.html`;
   } catch (_) {
     // ignore
   }

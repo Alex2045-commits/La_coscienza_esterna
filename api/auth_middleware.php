@@ -49,6 +49,17 @@ function auth_require_admin(): array {
         $_SESSION['_regenerated'] = true;
     }
 
+    // Fallback compatibile: se la sessione ha gia utente admin, promuovi il contesto admin
+    if (
+        empty($_SESSION['admin_id']) &&
+        !empty($_SESSION['user_id']) &&
+        (($_SESSION['role'] ?? null) === 'admin')
+    ) {
+        $_SESSION['admin_id'] = (int)$_SESSION['user_id'];
+        $_SESSION['admin_username'] = (string)($_SESSION['username'] ?? 'admin');
+        $_SESSION['admin_avatar'] = $_SESSION['avatar'] ?? null;
+    }
+
     if (empty($_SESSION['admin_id'])) {
         http_response_code(403);
         echo json_encode(['error' => 'ADMIN_ONLY']);

@@ -14,6 +14,9 @@ if (isLocalhost()) {
     $_SESSION['user_id']  ??= 1;
     $_SESSION['username'] ??= 'admin';
     $_SESSION['role']     ??= 'admin';
+    $_SESSION['admin_id'] ??= (int)$_SESSION['user_id'];
+    $_SESSION['admin_username'] ??= (string)$_SESSION['username'];
+    $_SESSION['admin_avatar'] ??= ($_SESSION['avatar'] ?? null);
     $_SESSION['admin_2fa_verified'] = true;
 }
 ?>

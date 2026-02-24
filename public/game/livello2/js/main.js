@@ -3,7 +3,13 @@ function getCookie(name) {
   return m ? decodeURIComponent(m[2]) : null;
 }
 
-const LOGIN_PAGE_URL = 'http://localhost:4000/login/login.html';
+const LOGIN_PAGE_URL = '/login/login.html';
+const CHAPTER_THREE_LINES = (window.EOV_STORY_BIBLE?.chapters || [])
+  .find((c) => c.id === 3)?.beats || [
+    "Austin sembra dominio. In realta e controllo subito.",
+    "Specchi, doppi, stanze vuote: sapere non basta ad agire.",
+    "Marco vede se stesso nell'altro: coscienza senza decisione."
+  ];
 
 function redirectToLogin() {
   window.location.href = LOGIN_PAGE_URL;
@@ -11,7 +17,7 @@ function redirectToLogin() {
 
 async function requireLoggedAccount() {
   try {
-    const res = await fetch('http://localhost:8000/api/me.php', {
+    const res = await fetch('/api/me.php', {
       method: 'GET',
       credentials: 'include'
     });
@@ -37,7 +43,7 @@ async function giveXP(action, options = {}) {
   try {
     if (!window.__EOV_RUN_TOKEN) window.__EOV_RUN_TOKEN = null;
     const csrf = getCookie('csrf_token') || '';
-    const res = await fetch('http://localhost:8000/api/user/gain_xp.php', {
+    const res = await fetch('/api/user/gain_xp.php', {
       method: 'POST',
       credentials: 'include',
       keepalive: Boolean(options.keepalive),
@@ -73,7 +79,7 @@ let __unlockKeyCache = null;
 async function getUnlockedLevelStorageKey() {
   if (__unlockKeyCache) return __unlockKeyCache;
   try {
-    const res = await fetch('http://localhost:8000/api/me.php', {
+    const res = await fetch('/api/me.php', {
       method: 'GET',
       credentials: 'include'
     });
@@ -96,6 +102,12 @@ async function unlockPlayableLevel(level) {
   if (!Number.isFinite(current) || safe > current) {
     localStorage.setItem(key, String(safe));
   }
+}
+
+function setCurrentStoryLevel(level) {
+  const safe = Math.max(1, Math.min(4, Number(level) || 1));
+  const uid = CURRENT_ACCOUNT && CURRENT_ACCOUNT.id ? CURRENT_ACCOUNT.id : "guest";
+  localStorage.setItem(`eov_current_level_u${uid}`, String(safe));
 }
 
 function updateLevel2Hud(health, score) {
@@ -139,6 +151,7 @@ function drawScrollableBackground(game) {
 function startStoryRotation(lines) {
   const storyEl = document.querySelector("#storyHint p");
   if (!storyEl || !Array.isArray(lines) || lines.length === 0) return;
+  const resolveNarrativeColor = window.EOV_getNarrativeColor || ((_, fallback) => fallback || "#d7dbe8");
 
   let idx = 0;
   let timer = null;
@@ -164,6 +177,7 @@ function startStoryRotation(lines) {
     if (paused || destroyed) return;
     const text = cleanLines[idx];
     storyEl.textContent = text;
+    storyEl.style.color = resolveNarrativeColor(text, "#d7dbe8");
     const readMs = Math.max(5200, Math.min(12000, 1900 + text.length * 55));
     idx = (idx + 1) % cleanLines.length;
     scheduleNext(readMs);
@@ -245,7 +259,7 @@ function ensureGlobalGameActions(onLeaveLevel) {
     if (typeof onLeaveLevel === "function") {
       await onLeaveLevel({ keepalive: true });
     }
-    window.location.href = 'http://localhost:4000/index/index.html';
+    window.location.href = '/index/index.html';
   };
 
   const logoutBtn = mkBtn('Logout');
@@ -254,12 +268,12 @@ function ensureGlobalGameActions(onLeaveLevel) {
       await onLeaveLevel({ keepalive: true });
     }
     try {
-      await fetch('http://localhost:8000/api/logout.php', {
+      await fetch('/api/logout.php', {
         method: 'POST',
         credentials: 'include'
       });
     } catch (e) {}
-    window.location.href = 'http://localhost:4000/index/index.html';
+    window.location.href = '/index/index.html';
   };
 
   wrap.appendChild(homeBtn);
@@ -712,7 +726,7 @@ this.bindExitGuards = function() {
 
 this.leaveLevelToHome = async () => {
   await this.rollbackRunProgress({ keepalive: true });
-  window.location.href = "http://localhost:4000/index/index.html";
+  window.location.href = "/index/index.html";
 };
 
 // Ciclo di gioco principale
@@ -888,13 +902,11 @@ this.GameLoop = () => {
   this.StartGame = async function () {
     const user = await requireLoggedAccount();
     if (!user) return;
+    CURRENT_ACCOUNT = user;
+    setCurrentStoryLevel(3);
     ensureGlobalGameActions((opts) => this.rollbackRunProgress(opts));
     this.bindExitGuards();
-    this.storyController = startStoryRotation([
-      "Le rovine di Asterfall custodiscono il varco d'ombra: avanza e resta vigile.",
-      "Ogni corridoio crollato nasconde trappole antiche. Muoviti con precisione.",
-      "Il sigillo non attende: leggi il campo, colpisci al momento giusto e prosegui."
-    ]);
+    this.storyController = startStoryRotation(CHAPTER_THREE_LINES);
     this.enableMusicAutoRetry();
     this.bootstrapBackgroundMusic();
     this.loadAssets(() => {
@@ -916,8 +928,9 @@ this.GameLoop = () => {
     this.levelCompleted = true;
     await giveXP("l2_level_complete");
     await unlockPlayableLevel(4);
+    setCurrentStoryLevel(4);
     setTimeout(() => {
-      window.location.href = "http://localhost:4000/index/index.html";
+      window.location.href = "/game/livello3/livello3.html";
     }, 1400);
   };
 

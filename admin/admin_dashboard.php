@@ -202,6 +202,9 @@ $securityLogs = $stmtSecurity->fetchAll(PDO::FETCH_ASSOC);
             <button id="btnStartGameAdmin" class="ghost" style="margin-left:auto;">
                 <i class="fa-solid fa-gamepad" aria-hidden="true"></i> Lato Player Admin
             </button>
+            <button id="btnGoIndexAdmin" class="ghost" style="margin-left:8px;">
+                <i class="fa-solid fa-house" aria-hidden="true"></i> Index
+            </button>
         </div>
 
         <!-- HOME -->

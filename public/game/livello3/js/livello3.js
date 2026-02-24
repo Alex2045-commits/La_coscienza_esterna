@@ -1,5 +1,6 @@
-const LOGIN_PAGE_URL = 'http://localhost:4000/login/login.html';
+const LOGIN_PAGE_URL = '/login/login.html';
 let CURRENT_ACCOUNT = null;
+const FINAL_ARC_CHAPTERS = (window.EOV_STORY_BIBLE?.chapters || []).filter((c) => c.id >= 4);
 
 function redirectToLogin() {
     window.location.href = LOGIN_PAGE_URL;
@@ -7,7 +8,7 @@ function redirectToLogin() {
 
 async function requireLoggedAccount() {
     try {
-        const res = await fetch('http://localhost:8000/api/me.php', {
+        const res = await fetch('/api/me.php', {
             method: 'GET',
             credentials: 'include'
         });
@@ -86,18 +87,18 @@ function ensureGlobalGameActions() {
 
     const homeBtn = mkBtn('Home');
     homeBtn.onclick = () => {
-        window.location.href = 'http://localhost:4000/index/index.html';
+        window.location.href = '/index/index.html';
     };
 
     const logoutBtn = mkBtn('Logout');
     logoutBtn.onclick = async () => {
         try {
-            await fetch('http://localhost:8000/api/logout.php', {
+            await fetch('/api/logout.php', {
                 method: 'POST',
                 credentials: 'include'
             });
         } catch (e) {}
-        window.location.href = 'http://localhost:4000/index/index.html';
+        window.location.href = '/index/index.html';
     };
 
     wrap.appendChild(homeBtn);
@@ -105,11 +106,44 @@ function ensureGlobalGameActions() {
     document.body.appendChild(wrap);
 }
 
+function renderNarrativeHub() {
+    if (document.getElementById('narrativeHubPanel')) return;
+
+    const panel = document.createElement('section');
+    panel.id = 'narrativeHubPanel';
+    panel.style.cssText = "max-width:920px;margin:24px auto 0 auto;padding:18px 22px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(8,12,20,0.72);color:#e8eef8;font-family:'Courier New',monospace;line-height:1.45;";
+
+    const title = document.createElement('h2');
+    title.textContent = "Arco Finale - La Coscienza Esterna";
+    title.style.cssText = "margin:0 0 12px 0;font-size:1.1rem;letter-spacing:0.6px;";
+    panel.appendChild(title);
+
+    const list = document.createElement('div');
+    if (FINAL_ARC_CHAPTERS.length === 0) {
+        list.textContent = "Capitoli finali in preparazione.";
+    } else {
+        FINAL_ARC_CHAPTERS.forEach((ch) => {
+            const row = document.createElement('article');
+            row.style.cssText = "padding:10px 0;border-top:1px solid rgba(255,255,255,0.08);";
+            row.innerHTML = `
+                <div style="font-weight:700;color:#c9d8ff;">Capitolo ${ch.id} - ${ch.title}</div>
+                <div style="color:#a7b7d8;">Tema: ${ch.theme}</div>
+                <div style="margin-top:6px;color:#dbe6ff;">${(ch.beats || []).join(" ")}</div>
+            `;
+            list.appendChild(row);
+        });
+    }
+    panel.appendChild(list);
+
+    document.body.appendChild(panel);
+}
+
 window.addEventListener("load", async function () {
     const user = await requireLoggedAccount();
     if (!user) return;
     CURRENT_ACCOUNT = user;
     ensureGlobalGameActions();
+    renderNarrativeHub();
     const preLoader = document.getElementById("preLoader");
     preLoader.classList.add("hidden");
 });

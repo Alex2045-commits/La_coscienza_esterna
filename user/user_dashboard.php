@@ -29,12 +29,12 @@ header("Content-Type: text/html; charset=utf-8");
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard - La Coscienza Esterna</title>
   <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
-  <link rel="stylesheet" href="http://localhost:4000/user/user_dashboard.css">
-  <link rel="manifest" href="http://localhost:4000/manifest.json">
-  <link rel="icon" href="http://localhost:4000/icons/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:4000/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:4000/icons/favicon-16x16.png">
-  <link rel="apple-touch-icon" href="http://localhost:4000/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/user/user_dashboard.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
 <div id="app">
@@ -107,7 +107,7 @@ header("Content-Type: text/html; charset=utf-8");
       <div class="card notifications-card">
         <h3>Notifiche</h3>
         <div class="notifications-toolbar">
-          <div id="notificationsInfo">Pagina 1/1 · Totale 0</div>
+          <div id="notificationsInfo">Pagina 1/1 Â· Totale 0</div>
           <div class="notifications-actions">
             <button id="notifPrev" class="small" type="button">Precedente</button>
             <button id="notifNext" class="small" type="button">Successiva</button>
@@ -130,7 +130,8 @@ header("Content-Type: text/html; charset=utf-8");
 </div>
 
 <div id="toastContainer"></div>
-<script src="http://localhost:4000/auth.js"></script>
-<script src="http://localhost:4000/user/user_dashboard.js"></script>
+<script src="/auth.js"></script>
+<script src="/user/user_dashboard.js"></script>
 </body>
 </html>
+

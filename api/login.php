@@ -265,6 +265,9 @@ $_SESSION['user_id'] = $user['id'];
 $_SESSION['username'] = $user['username'];
 $_SESSION['role'] = $user['role'];
 $_SESSION['avatar'] = $user['avatar'] ?? null;
+if (($user['role'] ?? '') === 'admin') {
+    $_SESSION['admin_id'] = (int)$user['id'];
+}
 
 // Aggiorna ultimo accesso in last_activity
 try {
@@ -289,6 +292,14 @@ $authToken = TokenManager::generateJwt([
     'username' => $user['username'],
     'role' => $user['role'],
     'exp' => time() + (7 * 24 * 60 * 60) // 7 giorni
+]);
+
+// Persisti anche il JWT in cookie HttpOnly per fallback lato server
+setcookie("access_token", $authToken, [
+    'expires' => time() + (7 * 24 * 60 * 60),
+    'path' => '/',
+    'httponly' => true,
+    'samesite' => 'Lax',
 ]);
 
 // Reset IP score positivo per login corretto

@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("emailOtpForm");
   const input = document.getElementById("emailOtpInput");
   const err = document.getElementById("error");
-  const USER_DASHBOARD_URL = `${APP_ORIGIN}/user/user_dashboard.php`;
+  const USER_DASHBOARD_URL = `${APP_ORIGIN}/user/user_dashboard.html`;
 
   function clampLevel(n) {
     const v = Number(n || 1);

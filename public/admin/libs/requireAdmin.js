@@ -2,7 +2,7 @@ import { safeFetch } from "./safeFetch.js";
 
 export async function requireAdmin() {
   try {
-    const res = await safeFetch("http://localhost:8000/api/me.php");
+    const res = await safeFetch("/api/me.php");
     if (!res.ok) return { status: "unauth" };
 
     const json = await res.json();

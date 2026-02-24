@@ -123,6 +123,45 @@ function auth_user(): ?array {
         }
     }
 
+    // Fallback cookie JWT (es. access_token dopo alcuni flussi auth)
+    $cookieJwt = (string)($_COOKIE['access_token'] ?? '');
+    if ($cookieJwt !== '') {
+        try {
+            $decoded = TokenManager::validateJwt($cookieJwt, $pdo);
+            $uid = (int)($decoded['user_id'] ?? $decoded['id'] ?? 0);
+            if ($uid > 0) {
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+                $stmt->execute([$uid]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($user) {
+                    if (!empty($user['banned_until']) && strtotime($user['banned_until']) > time()) {
+                        http_response_code(403);
+                        echo json_encode([
+                            'error' => 'USER_BANNED',
+                            'banned_until' => $user['banned_until']
+                        ]);
+                        exit;
+                    }
+                    $_SESSION['user_id'] = (int)$user['id'];
+                    $_SESSION['username'] = (string)$user['username'];
+                    $_SESSION['role'] = (string)$user['role'];
+                    $_SESSION['avatar'] = $user['avatar'] ?? null;
+
+                    $authUser = [
+                        'id' => (int)$user['id'],
+                        'username' => $user['username'],
+                        'role' => $user['role'],
+                        'avatar' => $user['avatar'] ?? null
+                    ];
+                    $GLOBALS['AUTH_USER'] = $authUser;
+                    return $authUser;
+                }
+            }
+        } catch (Throwable $e) {
+            // ignore invalid cookie jwt
+        }
+    }
+
     return null;
 }
 

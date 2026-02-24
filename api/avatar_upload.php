@@ -15,57 +15,99 @@ try {
     $user = auth_require_user();
     $uid = (int)$user['id'];
 
-    if (!isset($_FILES['avatar'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'NO_FILE']);
-        exit;
+    $tmp = '';
+    $size = 0;
+    $mime = '';
+    $fromJson = false;
+
+    if (isset($_FILES['avatar'])) {
+        $file = $_FILES['avatar'];
+        $uploadError = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['error' => 'UPLOAD_ERROR', 'code' => $uploadError]);
+            exit;
+        }
+
+        $tmp = (string)($file['tmp_name'] ?? '');
+        if ($tmp === '' || !is_uploaded_file($tmp)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'INVALID_UPLOAD']);
+            exit;
+        }
+
+        $size = (int)($file['size'] ?? 0);
+        if ($size <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'EMPTY_FILE']);
+            exit;
+        }
+    } else {
+        $payload = json_decode(getRawRequestBody(), true);
+        $dataUrl = (string)($payload['avatar_base64'] ?? '');
+        if ($dataUrl === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'NO_FILE']);
+            exit;
+        }
+
+        if (!preg_match('#^data:(image/(?:png|jpeg));base64,(.+)$#', $dataUrl, $m)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'INVALID_FORMAT']);
+            exit;
+        }
+
+        $mime = strtolower((string)$m[1]);
+        $decoded = base64_decode((string)$m[2], true);
+        if ($decoded === false || $decoded === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'INVALID_UPLOAD']);
+            exit;
+        }
+
+        $size = strlen($decoded);
+        if ($size <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'EMPTY_FILE']);
+            exit;
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'avt_');
+        if ($tmp === false || @file_put_contents($tmp, $decoded) === false) {
+            http_response_code(500);
+            echo json_encode(['error' => 'TEMP_WRITE_FAILED']);
+            exit;
+        }
+        $fromJson = true;
     }
 
-    $file = $_FILES['avatar'];
-    $uploadError = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
-    if ($uploadError !== UPLOAD_ERR_OK) {
-        http_response_code(400);
-        echo json_encode(['error' => 'UPLOAD_ERROR', 'code' => $uploadError]);
-        exit;
-    }
-
-    $tmp = (string)($file['tmp_name'] ?? '');
-    if ($tmp === '' || !is_uploaded_file($tmp)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'INVALID_UPLOAD']);
-        exit;
-    }
-
-    $size = (int)($file['size'] ?? 0);
-    if ($size <= 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'EMPTY_FILE']);
-        exit;
-    }
     if ($size > 2 * 1024 * 1024) {
+        if ($fromJson && $tmp !== '' && is_file($tmp)) { @unlink($tmp); }
         http_response_code(400);
         echo json_encode(['error' => 'FILE_TOO_LARGE']);
         exit;
     }
 
-    $mime = '';
-    if (function_exists('finfo_open')) {
-        $fi = @finfo_open(FILEINFO_MIME_TYPE);
-        if ($fi) {
-            $mime = (string)@finfo_file($fi, $tmp);
-            @finfo_close($fi);
+    if ($mime === '') {
+        if (function_exists('finfo_open')) {
+            $fi = @finfo_open(FILEINFO_MIME_TYPE);
+            if ($fi) {
+                $mime = (string)@finfo_file($fi, $tmp);
+                @finfo_close($fi);
+            }
         }
-    }
-    if ($mime === '' && function_exists('mime_content_type')) {
-        $mime = (string)@mime_content_type($tmp);
-    }
-    if ($mime === '' && function_exists('getimagesize')) {
-        $img = @getimagesize($tmp);
-        $mime = (string)($img['mime'] ?? '');
+        if ($mime === '' && function_exists('mime_content_type')) {
+            $mime = (string)@mime_content_type($tmp);
+        }
+        if ($mime === '' && function_exists('getimagesize')) {
+            $img = @getimagesize($tmp);
+            $mime = (string)($img['mime'] ?? '');
+        }
     }
 
     $allowed = ['image/png', 'image/jpeg'];
     if (!in_array($mime, $allowed, true)) {
+        if ($fromJson && $tmp !== '' && is_file($tmp)) { @unlink($tmp); }
         http_response_code(400);
         echo json_encode(['error' => 'INVALID_FORMAT', 'mime' => $mime]);
         exit;
@@ -83,10 +125,20 @@ try {
 
     $newName = "custom_{$uid}_" . time() . ".{$ext}";
     $dest = $avatarsDir . $newName;
-    if (!@move_uploaded_file($tmp, $dest)) {
-        http_response_code(500);
-        echo json_encode(['error' => 'MOVE_FAILED']);
-        exit;
+    if ($fromJson) {
+        if (!@rename($tmp, $dest) && !@copy($tmp, $dest)) {
+            if ($tmp !== '' && is_file($tmp)) { @unlink($tmp); }
+            http_response_code(500);
+            echo json_encode(['error' => 'MOVE_FAILED']);
+            exit;
+        }
+        if ($tmp !== '' && is_file($tmp)) { @unlink($tmp); }
+    } else {
+        if (!@move_uploaded_file($tmp, $dest)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'MOVE_FAILED']);
+            exit;
+        }
     }
 
     $st = $pdo->prepare("UPDATE users SET avatar = :a WHERE id = :id");
