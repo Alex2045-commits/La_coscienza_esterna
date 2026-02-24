@@ -58,6 +58,9 @@ Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze
 2. Verifica che non ci siano URL hardcoded `localhost` nei flussi critici.
 3. Usa account demo separati da account reali.
 
+## annotazione personale
+Non è un progetto perfetto, ma mi è servito per capire come funziona davvero un’applicazione full-stack.
+
 ## License
 
 MIT. Vedi [LICENSE](./LICENSE).
