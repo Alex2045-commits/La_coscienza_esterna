@@ -10,7 +10,21 @@ Questo progetto è stato creato per esercitarmi ed arricchire la mia conoscenza 
 - sicurezza lato server e design lato web
 - comunicazione full-stack (API, DB, frontend)
 
-## Quick Start (Local)
+## Cosa ho imparato
+- come funzionano i flussi di autenticazione (sessioni vs JWT)
+- basi di sicurezza lato backend
+- struttura di un progetto full-stack
+- debugging e miglioramento del codice
+
+## Stato del progetto
+Questo progetto è nato per studio e curiosità di sviluppo delle mie conoscenze ed è in continua evoluzione, visto che non è ancora finito.
+
+## Avvio rapido
+1. Clona il repository
+2. Configura le variabili d’ambiente
+3. Avvia backend e frontend
+
+##Come avviare la parte beckend e frontend
 
 1. Copia `.env.example` in `.env`.
 2. Configura variabili DB e segreti in `.env`.
