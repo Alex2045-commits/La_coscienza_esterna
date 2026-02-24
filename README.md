@@ -1,6 +1,11 @@
 # La Coscienza Esterna
 
-Web app/game project con autenticazione, dashboard utente/admin, sicurezza applicativa e componenti realtime.
+Security-focused full-stack web game platform featuring hardened authentication
+(session, JWT, 2FA), user/admin roles, real-time security alerts and interactive
+game progression.
+
+Built to demonstrate secure backend/frontend integration, auth design choices,
+and production-oriented project structure.
 
 ## Quick Start (Local)
 
