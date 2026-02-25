@@ -1,5 +1,3 @@
-// Shared narrative base for all game levels.
-// Exposed as window.EOV_STORY_BIBLE so each level can reuse the same canon.
 (function () {
   const characterColors = {
     narrator: "#c9d8ff",
@@ -174,3 +172,4 @@
   window.EOV_STORY_BIBLE = story;
   window.EOV_getNarrativeColor = getNarrativeColor;
 })();
+

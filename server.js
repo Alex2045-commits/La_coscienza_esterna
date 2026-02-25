@@ -1,5 +1,4 @@
-//server.js
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
@@ -16,7 +15,7 @@ const PHP_EXECUTABLE = process.env.PHP_BIN || "C:\\Program Files (x86)\\php-8.2.
 let PORT = parseInt(process.env.PORT, 10) || 3001;
 
 // ==========================
-// Start server con portfinder e 0.0.0.0
+// Server startup with portfinder and 0.0.0.0 binding
 // ==========================
 function startServer(port) {
   server.listen(port, '0.0.0.0', () => {
@@ -167,7 +166,7 @@ function parseJsonLastLine(output) {
   try {
     return JSON.parse(trimmed);
   } catch (_) {
-    // Fallback: prova a estrarre un blocco JSON valido da output misto (warning + json)
+    // Extract a valid JSON block from mixed output (warnings + JSON)
     const firstObj = trimmed.indexOf('{');
     const lastObj = trimmed.lastIndexOf('}');
     if (firstObj !== -1 && lastObj > firstObj) {
@@ -331,10 +330,11 @@ function getMimeType(filePath) {
 }
 
 // ==========================
-// Avvio server con gestione porta
+// Start server with dynamic port handling
 // ==========================
 startServer(PORT);
 const clientConfigPath = path.join(__dirname, 'public', 'client_config.js');
 
 fs.writeFileSync(clientConfigPath, `window.SERVER_PORT = ${PORT};\n`, 'utf-8');
 console.log(`client_config.js aggiornato con porta ${PORT}`);
+

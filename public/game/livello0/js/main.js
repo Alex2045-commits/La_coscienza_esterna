@@ -1,25 +1,22 @@
-﻿// main.js (versione corretta e pulita)
-// Dipende da: player.js, mostro.js, secondomostro.js
-// Assicurati di servire la pagina via http://localhost:8000/... in modo che i cookie vengano inviati
-// =========================
+﻿// Dipendenze: player.js, mostro.js, secondomostro.js
+// =======================================
 // PROGRESSO GIOCATORE (client-side cache)
-// =========================
+// =======================================
 let playerProgress = {
   level: 1,
   exp: 0,
   coins: 0,
-  expToNext: 100 // xpToNext può essere recalcolato su load; inizializziamo a 100
+  expToNext: 100
 };
 let CURRENT_ACCOUNT = null;
 let RUN_TOKEN = null;
 const MAX_PLAYABLE_LEVEL = 4;
 let FIRST_LEVEL_COMPLETED = false;
 
-// debounce / throttle per salvataggio
+// Save throttle
 let _saveTimeout = null;
 const SAVE_THROTTLE_MS = 1500;
 
-// Global sound object for sharing between prologue and demo
 let firstActSound = null;
 
 function getUnlockedLevelStorageKey() {
@@ -74,8 +71,7 @@ function getCookie(name) {
 
 function redirectToOfflineMode() {
   console.log("Redirecting to offline mode...");
-  // Don't redirect, just continue
-  // window.location.href = 'http://localhost:4000/gameOffline/offline.html';
+  window.location.href = 'http://localhost:4000/gameOffline/offline.html';
 }
 
 function ensureGlobalGameActions() {
@@ -518,7 +514,7 @@ function createFirstActSound() {
     g.gain.exponentialRampToValueAtTime(0.045, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
 
-    // Light ducking: lascia spazio ai passi senza far sparire l'ambiente.
+    // Light ducking to keep ambient audio present
     if (ambience) {
       ambience.g.gain.cancelScheduledValues(t);
       ambience.g.gain.setValueAtTime(Math.max(0.0001, ambience.g.gain.value), t);
@@ -590,7 +586,7 @@ function createFirstActSound() {
     mid.type = "triangle";
     high.type = "sine";
 
-    // Accordo aperto e lento per reveal del titolo
+    // Slow open chord for title reveal
     low.frequency.setValueAtTime(110, t);
     low.frequency.exponentialRampToValueAtTime(146.8, t + 1.4);
     mid.frequency.setValueAtTime(220, t);
@@ -726,7 +722,6 @@ function ensureFullscreenKick() {
     try {
       if (el.requestFullscreen) await el.requestFullscreen();
     } catch (_) {
-      // Browser may block without explicit gesture.
     }
   };
 
@@ -768,8 +763,7 @@ async function runFirstActPrologue() {
     sound.pulse(0.25);
   };
 
-  // Il personaggio (e il telefono) devono stare nel riquadro centrale,
-  // cosi seguono il restringimento della stanza.
+  // Keep character and phone within the central frame
   if (hero.parentNode !== room) room.appendChild(hero);
   if (phone.parentNode !== room) room.appendChild(phone);
   if (mirror.parentNode !== room) room.appendChild(mirror);
@@ -879,7 +873,7 @@ async function runFirstActPrologue() {
     const roomH = Math.max(220, roomRect.height || Math.round(window.innerHeight * 0.5));
     const roomW = Math.max(320, roomRect.width || Math.round(window.innerWidth * 0.6));
 
-    // Calcolo scala ideale in base all'altezza utile della stanza.
+    // Compute scale from usable room height
     const targetScale = Math.max(0.68, Math.min(1.03, roomH / 360));
     if (Math.abs(heroAnim.scale - targetScale) > 0.005) {
       heroAnim.scale = targetScale;
@@ -947,9 +941,7 @@ async function runFirstActPrologue() {
     const mirrorLeftInsideRoom = Math.max(0, mirrorRect.left - roomRect.left);
     const mirrorW = Math.max(90, mirrorRect.width || 110);
     const mirrorCenter = mirrorLeftInsideRoom + (mirrorW * 0.5);
-    // Il riflesso usa rx = -x: per centrarlo nello specchio, il personaggio
-    // principale deve fermarsi alla posizione opposta rispetto al centro stanza.
-    // Aggiungo meta larghezza riflesso per allineare il CENTRO del corpo.
+    // Mirror uses rx = -x; align main sprite to mirrored body center
     return Math.round((roomW * 0.5) - mirrorCenter + (reflectionW * 0.5));
   };
 
@@ -1322,7 +1314,7 @@ async function startDemoGameplay() {
     if (center) { center.textContent = ""; center.classList.remove("show", "invasive", "danger"); }
     if (room) room.style.display = "none";
 
-    // Add post-prologue styles
+    // post-prologue
     if (!document.getElementById("postPrologueStyle")) {
       const style = document.createElement("style");
       style.id = "postPrologueStyle";
@@ -1457,24 +1449,20 @@ async function startDemoGameplay() {
     }
 
     // ========================================
-    // PHASE 1: Auto-advancing narrative texts
+    // PHASE 1: testo narrativo automatico
     // ========================================
     scene.className = "scene-narrative";
     hero.style.display = "none";
     
-    // Show cursor during narrative phase
     if (root) root.classList.remove("hide-cursor");
 
-    // Pause functionality - declare globally
     window.isPaused = false;
     window.pauseMenu = null;
     let narrativeEscapeHandler = null;
     
-    // Wait function that respects pause
     const waitMs = async (ms) => {
       const start = Date.now();
       while (Date.now() - start < ms) {
-        // Check if paused and wait longer if so
         if (window.isPaused) {
           await new Promise(resolve => setTimeout(resolve, 200));
         } else {
@@ -1488,11 +1476,8 @@ async function startDemoGameplay() {
     pauseBtn.textContent = "PAUSA";
     pauseBtn.style.cssText = "position: fixed; bottom: 30px; left: 30px; padding: 12px 24px; background: rgba(100,80,60,0.9); border: 2px solid rgba(200,180,140,0.8); color: #fff; font-family: 'Courier New', monospace; font-size: 16px; cursor: pointer; z-index: 9999; opacity: 1; border-radius: 4px;";
     document.body.appendChild(pauseBtn);
-
-    // Pause functionality
     
     const togglePause = () => {
-      // If pause menu already exists, remove it and resume
       const existingMenu = document.getElementById("pauseMenu");
       if (existingMenu) {
         existingMenu.remove();
@@ -1500,7 +1485,6 @@ async function startDemoGameplay() {
         return;
       }
       
-      // Create pause menu
       window.pauseMenu = document.createElement("div");
       window.pauseMenu.id = "pauseMenu";
       window.pauseMenu.style.cssText = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default;";
@@ -1512,7 +1496,6 @@ async function startDemoGameplay() {
       `;
       document.body.appendChild(window.pauseMenu);
       
-      // Stop the narrative
       window.isPaused = true;
       
       document.getElementById("pauseResume").onclick = () => {
@@ -1522,16 +1505,13 @@ async function startDemoGameplay() {
       };
       
       document.getElementById("pauseAbandon").onclick = () => {
-        // Go to main menu / restart
         window.location.href = "/user/user_dashboard.html";
       };
       
       document.getElementById("pauseLogout").onclick = () => {
-        // Logout and go to login
         window.location.href = "/api/logout.php";
       };
       
-      // Click outside buttons to resume
       window.pauseMenu.addEventListener("click", (e) => {
         if (e.target === window.pauseMenu) {
           window.pauseMenu.remove();
@@ -1540,12 +1520,10 @@ async function startDemoGameplay() {
       });
     };
     
-    // Make togglePause accessible globally
     window.togglePause = togglePause;
     
     pauseBtn.onclick = togglePause;
     
-    // ESC key to toggle pause
     narrativeEscapeHandler = (e) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -1556,13 +1534,9 @@ async function startDemoGameplay() {
 
     await waitMs(8000);
 
-    // Check if narrative already completed - skip to ATTO screen
     const savedProgress = localStorage.getItem('eov_atto1_progress');
     if (savedProgress === 'narrative_complete') {
-      // Skip the narrative, go directly to ATTO screen
-      // Show placeholder and skip to school corridor
       scene.className = "scene-school-atmosphere";
-      // Continue with school corridor setup (will be handled later)
     }
 
     let narrativeBox = document.getElementById("narrativeTextBox");
@@ -1572,27 +1546,21 @@ async function startDemoGameplay() {
       scene.appendChild(narrativeBox);
     }
 
-    // Create skip button (hidden by default - right click will be used)
     const skipBtn = document.createElement("button");
     skipBtn.id = "narrativeSkipBtn";
     skipBtn.textContent = "SALTA >";
     skipBtn.style.cssText = "position: absolute; bottom: 30px; right: 30px; padding: 12px 24px; background: rgba(100,80,60,0.8); border: 1px solid rgba(150,130,100,0.5); color: #c9b896; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; z-index: 50; opacity: 0; transition: opacity 0.5s; border-radius: 4px;";
     scene.appendChild(skipBtn);
 
-    // Show buttons immediately
     skipBtn.style.opacity = "0.7";
     pauseBtn.style.opacity = "0.7";
     
-    // Also show after a short delay just in case
     setTimeout(() => { skipBtn.style.opacity = "0.7"; pauseBtn.style.opacity = "0.7"; }, 2000);
 
-    // Skip mechanism - right click shows confirmation
     let skipNarrative = false;
     
-    // Handle right click for skip with confirmation
     const handleRightClick = (e) => {
       e.preventDefault();
-      // Create confirmation dialog
       const confirmDialog = document.createElement("div");
       confirmDialog.id = "skipConfirmDialog";
       confirmDialog.style.cssText = "position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;";
@@ -1615,12 +1583,10 @@ async function startDemoGameplay() {
       });
     };
     
-    // Add right click listener
     scene.addEventListener("contextmenu", handleRightClick);
     
     skipBtn.addEventListener("click", handleRightClick);
 
-    // All narrative lines in order
     const chapterOneBeats = (window.EOV_STORY_BIBLE?.chapters || [])
       .find((c) => c.id === 1)?.beats || [];
 
@@ -1657,10 +1623,8 @@ async function startDemoGameplay() {
 
     const resolveNarrativeColor = window.EOV_getNarrativeColor || ((_, fallback) => fallback || "#c9b896");
 
-    // Show each line for ~2.5s, blank lines = 0.8s pause
     for (let i = 0; i < allLines.length; i++) {
       if (skipNarrative) {
-        // Remove any remaining confirm dialog
         const existingConfirm = document.getElementById("skipConfirmDialog");
         if (existingConfirm) existingConfirm.remove();
         break; 
@@ -1684,14 +1648,11 @@ async function startDemoGameplay() {
       await waitMs(1000);
     }
 
-    // Hide skip button
     skipBtn.style.opacity = "0";
     pauseBtn.style.opacity = "0";
     setTimeout(() => { skipBtn.remove(); pauseBtn.remove(); }, 500);
     
-    // Save progress - completed narrative
     localStorage.setItem('eov_atto1_progress', 'narrative_complete');
-    // Remove right-click listener
     scene.removeEventListener("contextmenu", handleRightClick);
     if (narrativeEscapeHandler) {
       window.removeEventListener("keydown", narrativeEscapeHandler);
@@ -1701,7 +1662,6 @@ async function startDemoGameplay() {
       window.togglePause = null;
     }
 
-    // Brief pause before school scene
     narrativeBox.classList.remove("show");
     await waitMs(1500);
 
@@ -1717,7 +1677,6 @@ async function startDemoGameplay() {
     `;
     scene.appendChild(attoScreen);
 
-    // Add styles for ATTO screen
     if (!document.getElementById("attoScreenStyle")) {
       const style = document.createElement("style");
       style.id = "attoScreenStyle";
@@ -1773,10 +1732,8 @@ async function startDemoGameplay() {
       document.head.appendChild(style);
     }
 
-    // Wait for the screen to display
     await waitMs(4000);
 
-    // Fade out
     attoScreen.style.transition = "opacity 2s ease";
     attoScreen.style.opacity = "0";
     await waitMs(2500);
@@ -1784,7 +1741,7 @@ async function startDemoGameplay() {
 
 
     // ========================================
-    // Create pause button for gameplay (after Atto 1 title)
+    // pause button for gameplay
     // ========================================
     window.isPaused = false;
     window.pauseMenu = null;
@@ -1819,7 +1776,6 @@ async function startDemoGameplay() {
 
       window.isPaused = true;
 
-      // Use addEventListener instead of onclick
       const resumeBtn = document.getElementById("pauseResume");
       const abandonBtn = document.getElementById("pauseAbandon");
       const logoutBtn = document.getElementById("pauseLogout");
@@ -1828,7 +1784,6 @@ async function startDemoGameplay() {
         resumeBtn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          // Remove the entire menu (parent of the button)
           const menu = resumeBtn.parentElement;
           if (menu) menu.remove();
           window.isPaused = false;
@@ -1839,7 +1794,6 @@ async function startDemoGameplay() {
         abandonBtn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          // Redirect to index with cache-busting
           window.location.href = '/index/index.html?t=' + Date.now();
         });
       }
@@ -1848,14 +1802,12 @@ async function startDemoGameplay() {
         logoutBtn.addEventListener('click', async function(e) {
           e.preventDefault();
           e.stopPropagation();
-          // First logout, then redirect to login
           try {
             await fetch('/api/logout.php', {
               method: 'POST',
               credentials: 'include'
             });
           } catch (err) {}
-          // Redirect to login with cache-busting
           window.location.href = '/login/login.html?t=' + Date.now();
         });
       }
@@ -1874,29 +1826,24 @@ async function startDemoGameplay() {
     window.addEventListener("keydown", function(e) { 
       if (e.key === "Escape") { 
         e.preventDefault(); 
-        // Check if any pause menu exists
         const existingMenu = document.querySelector('#pauseMenu');
         if (existingMenu) {
-          // Menu exists - close it
           existingMenu.remove();
           window.isPaused = false;
         } else {
-          // No menu - open it
           gameTogglePause();
         }
       } 
     });
 
     // ========================================
-    // PHASE 2: School corridor - ATMOSPHERIC
+    //      PHASE 2: School corridor
     // ========================================
     narrativeBox.remove();
     scene.className = "scene-school-atmosphere";
     
-    // Ensure cursor is visible in corridor
     if (root) root.classList.remove("hide-cursor");
 
-    // Add comprehensive atmospheric styles
     if (!document.getElementById("schoolAtmosphereStyle")) {
       const style = document.createElement("style");
       style.id = "schoolAtmosphereStyle";
@@ -2320,17 +2267,14 @@ async function startDemoGameplay() {
         // Slow down hero automatically
         if (approachRatio > 0.7 && !autoStepBackTriggered) {
           autoStepBackTriggered = true;
-          // Auto step back after delay
           setTimeout(() => {
             atmHero.classList.add("stepBack");
-            // Animate back
             const stepBack = () => {
               if (heroAtmPos > 20) {
                 heroAtmPos -= 0.15;
                 atmHero.style.left = heroAtmPos + "%";
                 requestAnimationFrame(stepBack);
               } else {
-                // Reset after step back
                 setTimeout(() => {
                   atmHero.classList.remove("stepBack");
                   scene.style.transform = "";
@@ -2339,7 +2283,6 @@ async function startDemoGameplay() {
                   antonioSil.classList.remove("visible", "closer");
                   antonioPhase = "gone";
                   atmHint.textContent = "";
-                  // Show final phrase
                   if (!finalPhraseShown) {
                     finalPhraseShown = true;
                     setTimeout(() => {
@@ -2361,7 +2304,6 @@ async function startDemoGameplay() {
 
     requestAnimationFrame(atmAnimate);
 
-    // Hint fades out after first movement
     setTimeout(() => {
       if (atmHint) atmHint.style.transition = "opacity 2s", atmHint.style.opacity = "0";
     }, 4000);
@@ -2372,17 +2314,15 @@ async function startDemoGameplay() {
   }
 }
 
-// =========================
-// SALVATAGGIO (throttled) invia solo inventario al server
-// =========================
+// =============================================================================================================================
+// Progress save - parte ormai inutilizzata, il server è authoritative e salva direttamente dagli eventi di gameplay
+// =============================================================================================================================
 async function saveProgress(payload = null) {
-
-  // Se non viene passato payload, usa lo stato attuale del giocatore
   const data = payload ? payload : {
-    inventory: []   // OBBLIGATORIO PER IL SERVER
+    inventory: []
   };
 
-  // throttle salvataggi
+  // Throttle saves
   if (_saveTimeout) clearTimeout(_saveTimeout);
 
   _saveTimeout = setTimeout(async () => {
@@ -2401,7 +2341,7 @@ async function saveProgress(payload = null) {
         body: JSON.stringify(data)
       });
 
-      // Se non autenticato --> login
+      // Session expired
       if (res.status === 401) {
         redirectToOfflineMode();
         return;
@@ -2422,10 +2362,10 @@ async function saveProgress(payload = null) {
   }, SAVE_THROTTLE_MS);
 }
 
-// =========================
-// GESTIONE XP / LIVELLO / COIN
-// Server-authoritative: il client invia solo l'evento di gioco.
-// =========================
+// ===================================================================================
+// XP / Level / Coins
+// Server authoritative: client sends only gameplay events, parte ormai inutilizzata
+// ===================================================================================
 async function giveXP(action = 'monster_kill', options = {}) {
   const opts = options || {};
   if (typeof action !== 'string' || action.length === 0) return;
